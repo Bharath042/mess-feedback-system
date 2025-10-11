@@ -162,11 +162,12 @@ app.get('/health', (req, res) => {
 // Version endpoint for CI/CD testing
 app.get('/version', (req, res) => {
   res.json({
-    version: '1.2.0',
+    version: '1.3.0',
     buildDate: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    cicd: 'Azure DevOps Pipeline Test',
-    lastUpdated: '2025-10-11T15:20:00Z'
+    cicd: 'GitHub Actions CI/CD - LIVE TEST!',
+    lastUpdated: new Date().toISOString(),
+    message: 'CI/CD Pipeline Working Perfectly! 🚀'
   });
 });
 
