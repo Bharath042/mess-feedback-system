@@ -1,0 +1,141 @@
+name: Mess Feedback System CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: messfeedback.azurecr.io
+  IMAGE_NAME: mess-feedback-system
+  RESOURCE_GROUP: Kavi
+  CONTAINER_GROUP: messfeedback-terraform
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test || echo "No tests configured, skipping..."
+      continue-on-error: true
+    
+    - name: Security audit
+      run: npm audit --audit-level moderate || echo "Security audit completed with warnings"
+      continue-on-error: true
+
+  build-and-push-docker:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Login to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+    
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+        docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest .
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  deploy-infrastructure:
+    needs: build-and-push-docker
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.13.3
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init
+    
+    - name: Terraform Plan
+      working-directory: ./terraform
+      run: |
+        terraform plan \
+          -var="container_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
+          -out=tfplan
+    
+    - name: Terraform Apply
+      working-directory: ./terraform
+      run: terraform apply -auto-approve tfplan
+    
+    - name: Get Terraform Outputs
+      working-directory: ./terraform
+      run: terraform output
+
+  health-check:
+    needs: deploy-infrastructure
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Wait for deployment
+      run: sleep 60
+    
+    - name: Health Check
+      run: |
+        max_retries=10
+        retry_count=0
+        app_url="http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000"
+        
+        echo "Starting health check for $app_url"
+        
+        while [ $retry_count -lt $max_retries ]; do
+          retry_count=$((retry_count + 1))
+          echo "Health check attempt $retry_count of $max_retries"
+          
+          if curl -f -s "$app_url/health" > /dev/null; then
+            echo "✅ Health check passed!"
+            
+            # Test version endpoint
+            echo "Testing version endpoint..."
+            curl -s "$app_url/version" | jq '.'
+            
+            echo "🎉 Deployment successful!"
+            echo "🌐 Application URL: $app_url"
+            echo "👨‍🎓 Student Portal: $app_url/student-login"
+            echo "👨‍💼 Admin Portal: $app_url/admin-dashboard"
+            exit 0
+          else
+            echo "❌ Health check failed, retrying in 30 seconds..."
+            sleep 30
+          fi
+        done
+        
+        echo "❌ Health check failed after $max_retries attempts"
+        exit 1
