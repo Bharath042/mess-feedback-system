@@ -159,6 +159,17 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Version endpoint for CI/CD testing
+app.get('/version', (req, res) => {
+  res.json({
+    version: '1.2.0',
+    buildDate: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    cicd: 'Azure DevOps Pipeline Test',
+    lastUpdated: '2025-10-11T15:20:00Z'
+  });
+});
+
 // ===== BASIC ENDPOINTS FOR UI COMPATIBILITY =====
 
 // Admin profile endpoint - Basic version
