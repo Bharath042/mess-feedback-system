@@ -1,6 +1,23 @@
-# Mess Feedback System
+# 🍽️ Mess Feedback System
 
-A comprehensive web application for students to rate and provide feedback on mess food quality, built with modern web technologies and deployed on Azure cloud platform.
+A comprehensive web application for students to rate and provide feedback on mess food quality, built with modern web technologies and deployed on Azure cloud platform using **Infrastructure as Code (Terraform)** and **CI/CD pipelines**.
+
+## 🏗️ Architecture
+
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Node.js with Express
+- **Database**: Azure SQL Database
+- **Container**: Docker + Azure Container Registry (ACR)
+- **Hosting**: Azure Container Instances (ACI)
+- **Infrastructure**: Terraform (Infrastructure as Code)
+- **CI/CD**: Azure DevOps Pipelines
+- **Security**: Azure Key Vault for secrets management
+
+## 🌐 Live Application
+
+- **Main App**: [http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000](http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000)
+- **Student Portal**: [Student Login](http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000/student-login)
+- **Admin Dashboard**: [Admin Portal](http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000/admin-dashboard)
 
 ## 🚀 Features
 
