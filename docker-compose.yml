@@ -1,0 +1,61 @@
+# Docker Compose for Mess Feedback System
+
+services:
+  mess-feedback-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mess-feedback-system
+    command: ["node", "/app/server-docker.js"]
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Database configuration (using existing Azure SQL Database)
+      - DB_SERVER=messfeedbacksqlserver.database.windows.net
+      - DB_DATABASE=messfeedbacksqlserver
+      - DB_USER=sqladmin
+      - DB_PASSWORD=Kavi@1997
+      - DB_PORT=1433
+      # JWT Configuration
+      - JWT_SECRET=your-super-secret-jwt-key-for-docker-deployment-2024
+      - JWT_EXPIRES_IN=24h
+    volumes:
+      # Mount logs directory for persistent logging
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - mess-feedback-network
+
+  # Optional: Add a reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: mess-feedback-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - mess-feedback-app
+    restart: unless-stopped
+    networks:
+      - mess-feedback-network
+    profiles:
+      - production
+
+networks:
+  mess-feedback-network:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local

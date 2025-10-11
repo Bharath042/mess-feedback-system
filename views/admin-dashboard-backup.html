@@ -1,0 +1,3479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Mess Feedback System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --shadow-light: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-medium: 0 15px 35px rgba(31, 38, 135, 0.47);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--primary-gradient);
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 2rem 0;
+            box-shadow: var(--shadow-light);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            width: calc(100% - 280px);
+            min-height: 100vh;
+        }
+
+        .logo-section {
+            text-align: center;
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: var(--secondary-gradient);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.3s ease;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(240, 147, 251, 0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+        }
+
+        .admin-info {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 1rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-light);
+        }
+
+        .admin-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--warning-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 1.8rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(67, 233, 123, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .admin-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(67, 233, 123, 0.4);
+        }
+
+        .admin-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-badge {
+            background: var(--secondary-gradient);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            margin: 0.5rem 1rem;
+            border-radius: 15px;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-left: 4px solid var(--secondary-gradient);
+            box-shadow: var(--shadow-light);
+        }
+
+        .nav-item i {
+            margin-right: 1rem;
+            width: 20px;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover i {
+            transform: scale(1.1);
+        }
+
+        .nav-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--secondary-gradient);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        .nav-badge.show {
+            display: flex;
+        }
+
+        .nav-badge {
+            background: var(--secondary-gradient);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            margin-left: auto;
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(240, 147, 251, 0.3);
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--secondary-gradient);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+            z-index: 1001;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .content-section h2 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            z-index: 1003;
+            box-shadow: 0 5px 15px rgba(67, 233, 123, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -300px;
+                width: 280px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                overflow-y: auto;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+                width: 100%;
+                min-height: 100vh;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .logout-btn {
+                top: 1rem;
+                right: 1rem;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .content-section {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .action-btn {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Tablet Styles */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                margin-left: 220px;
+                padding: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+        }
+
+        /* Small Mobile Styles */
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .content-section {
+                padding: 1rem;
+                border-radius: 15px;
+            }
+
+            .content-section h2 {
+                font-size: 1.5rem;
+            }
+
+            .logout-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .mobile-menu-btn {
+                width: 45px;
+                height: 45px;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Analytics Section Styles */
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .analytics-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .analytics-grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .analytics-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .overview-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .overview-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .overview-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .overview-content p {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .meal-analytics-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .meal-analytics-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        .meal-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .meal-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .meal-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .meal-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meal-card h4 {
+            color: white;
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .meal-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .meal-count, .meal-rating {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .meal-rating {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .chart-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .chart-container h4 {
+            color: white;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .chart-container canvas {
+            max-width: 100%;
+            height: 300px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(30, 60, 114, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            font-weight: 600;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(30, 60, 114, 0.05);
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .stat-trend {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stat-trend.negative {
+            color: #ef4444;
+        }
+
+        .stat-trend:not(.negative) {
+            color: #10b981;
+        }
+
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .health-metrics {
+            padding: 1rem 0;
+        }
+
+        .metric {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-label {
+            min-width: 100px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .metric-bar {
+            flex: 1;
+            height: 8px;
+            background: #e1e5e9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .metric-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .metric-value {
+            min-width: 40px;
+            text-align: right;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .activity-icon.feedback {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+
+        .activity-icon.complaint {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .activity-icon.user {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-content p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: rgba(30, 60, 114, 0.05);
+            border: 2px solid rgba(30, 60, 114, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #1e3c72;
+        }
+
+        .action-btn:hover {
+            background: rgba(30, 60, 114, 0.1);
+            border-color: #1e3c72;
+            transform: translateY(-2px);
+        }
+
+        .action-btn i {
+            font-size: 1.5rem;
+        }
+
+        .action-btn span {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #1e3c72;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.3rem;
+            color: #1e3c72;
+            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background: #1e3c72;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .mobile-menu-btn.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                width: 280px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+                margin-top: 3rem;
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .table-container {
+                font-size: 0.9rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.8rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.5rem;
+            }
+
+            .header {
+                padding: 0.8rem;
+                border-radius: 10px;
+            }
+
+            .card {
+                padding: 1rem;
+                border-radius: 10px;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .sidebar {
+                width: 260px;
+            }
+
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .monitoring-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+            }
+
+            .action-btn {
+                padding: 1rem;
+            }
+
+            .action-btn i {
+                font-size: 1.2rem;
+            }
+
+            .action-btn span {
+                font-size: 0.8rem;
+            }
+
+            .activity-item {
+                padding: 0.8rem 0;
+            }
+
+            .activity-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8rem;
+            }
+
+            .metric {
+                gap: 0.8rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .metric-label {
+                min-width: 80px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
+
+    <!-- Logout Button -->
+    <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        Logout
+    </button>
+
+    <div class="dashboard-container">
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="app-title">Admin Portal</div>
+                <div class="welcome-text" id="welcomeText">Welcome, Administrator!</div>
+            </div>
+
+            <div class="admin-info">
+                <div class="admin-avatar" id="adminAvatar">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="admin-name" id="adminName">Administrator</div>
+                <div class="admin-badge">
+                    <i class="fas fa-crown me-1"></i>
+                    Admin
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard Overview
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('analytics')">
+                    <i class="fas fa-chart-line"></i> Analytics & Reports
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('users')" id="userManagementNav">
+                    <i class="fas fa-users"></i> User Management
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('feedback-review')">
+                    <i class="fas fa-comments"></i> Feedback Review
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('complaints')">
+                    <i class="fas fa-exclamation-triangle"></i> Complaint Management
+                    <span class="nav-badge" id="complaintBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('emotion-analysis')">
+                    <i class="fas fa-smile"></i> Emotion Analysis
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('notifications')">
+                    <i class="fas fa-bell"></i> Send Notifications
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('settings')" id="settingsNav">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div>
+                    <h2 id="pageTitle">Dashboard Overview</h2>
+                    <p id="pageSubtitle">Complete system monitoring and management</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Overview Section -->
+            <div class="content-section active" id="dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">Total Users</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+12% this month</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-number" id="totalFeedback">0</div>
+                        <div class="stat-label">Total Feedback</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+8% this week</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="stat-number" id="totalComplaints">0</div>
+                        <div class="stat-label">Active Complaints</div>
+                        <div class="stat-trend negative">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>-15% resolved</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-number" id="avgRating">0.0</div>
+                        <div class="stat-label">Average Rating</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0.3 improved</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Monitoring -->
+                <div class="monitoring-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-heartbeat"></i>
+                                System Health
+                            </h3>
+                            <div class="status-indicator online"></div>
+                        </div>
+                        <div class="health-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Database</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 95%"></div>
+                                </div>
+                                <span class="metric-value">95%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Server Load</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 68%"></div>
+                                </div>
+                                <span class="metric-value">68%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Memory Usage</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 72%"></div>
+                                </div>
+                                <span class="metric-value">72%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-clock"></i>
+                                Live Activity Feed
+                            </h3>
+                            <button class="btn btn-primary" onclick="refreshActivity()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <div class="activity-feed" id="activityFeed">
+                            <div class="activity-item">
+                                <div class="activity-icon feedback">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>New Feedback</strong> from student001</p>
+                                    <span class="activity-time">2 minutes ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon complaint">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>Complaint Resolved</strong> - Food Quality Issue</p>
+                                    <span class="activity-time">5 minutes ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon user">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>New User Registration</strong> - student123</p>
+                                    <span class="activity-time">8 minutes ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt"></i>
+                            Quick Actions
+                        </h3>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="exportData()">
+                            <i class="fas fa-download"></i>
+                            <span>Export Data</span>
+                        </button>
+                        <button class="action-btn" onclick="sendNotification()">
+                            <i class="fas fa-bell"></i>
+                            <span>Send Notification</span>
+                        </button>
+                        <button class="action-btn" onclick="generateReport()">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Generate Report</span>
+                        </button>
+                        <button class="action-btn" onclick="backupDatabase()">
+                            <i class="fas fa-database"></i>
+                            <span>Backup Database</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Management Section -->
+            <div class="content-section" id="users">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">User Management</h3>
+                        <button class="btn btn-success" onclick="showAddUserModal()">
+                            <i class="fas fa-plus"></i>
+                            Add User
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Last Login</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other sections will be added in the next response -->
+            <!-- Analytics & Reports Section -->
+            <div class="content-section" id="analytics">
+                <div class="analytics-header">
+                    <h2><i class="fas fa-chart-line me-3"></i>Analytics & Reports</h2>
+                    <div class="analytics-controls">
+                        <select id="analyticsTimeframe" class="form-select">
+                            <option value="today">Today</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="downloadReport()">
+                            <i class="fas fa-download me-2"></i>Download Report
+                        </button>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Overview Cards -->
+                    <div class="analytics-overview">
+                        <div class="overview-card">
+                            <div class="overview-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="overview-content">
+                                <h3 id="analyticsUsers">0</h3>
+                                <p>Total Users</p>
+                            </div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="overview-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="overview-content">
+                                <h3 id="analyticsFeedback">0</h3>
+                                <p>Total Feedback</p>
+                            </div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="overview-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="overview-content">
+                                <h3 id="analyticsComplaints">0</h3>
+                                <p>Total Complaints</p>
+                            </div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="overview-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="overview-content">
+                                <h3 id="analyticsResolved">0</h3>
+                                <p>Resolved Issues</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Meal Analytics -->
+                    <div class="meal-analytics-section">
+                        <h3><i class="fas fa-utensils me-2"></i>Meal Analytics</h3>
+                        <div class="meal-cards">
+                            <div class="meal-card" data-meal="breakfast">
+                                <div class="meal-icon">🍳</div>
+                                <h4>Breakfast</h4>
+                                <div class="meal-stats">
+                                    <span class="meal-count">0 feedback</span>
+                                    <span class="meal-rating">★ 0.0</span>
+                                </div>
+                            </div>
+                            <div class="meal-card" data-meal="lunch">
+                                <div class="meal-icon">🍽️</div>
+                                <h4>Lunch</h4>
+                                <div class="meal-stats">
+                                    <span class="meal-count">0 feedback</span>
+                                    <span class="meal-rating">★ 0.0</span>
+                                </div>
+                            </div>
+                            <div class="meal-card" data-meal="dinner">
+                                <div class="meal-icon">🍛</div>
+                                <h4>Dinner</h4>
+                                <div class="meal-stats">
+                                    <span class="meal-count">0 feedback</span>
+                                    <span class="meal-rating">★ 0.0</span>
+                                </div>
+                            </div>
+                            <div class="meal-card" data-meal="snacks">
+                                <div class="meal-icon">🍪</div>
+                                <h4>Snacks</h4>
+                                <div class="meal-stats">
+                                    <span class="meal-count">0 feedback</span>
+                                    <span class="meal-rating">★ 0.0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="charts-section">
+                        <div class="chart-container">
+                            <h4>Feedback Trends</h4>
+                            <canvas id="feedbackTrendChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Complaint Categories</h4>
+                            <canvas id="complaintCategoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Review Section -->
+            <div class="content-section" id="feedback-review">
+                <div class="feedback-header">
+                    <h2><i class="fas fa-comments me-3"></i>Feedback Review</h2>
+                    <div class="feedback-controls">
+                        <select id="feedbackTimeframe" class="form-select">
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                        <select id="feedbackMealType" class="form-select">
+                            <option value="all">All Meals</option>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                            <option value="snacks">Snacks</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="exportFeedbackData()">
+                            <i class="fas fa-download me-2"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feedback-summary">
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="summary-content">
+                            <h3 id="totalFeedbackCount">0</h3>
+                            <p>Total Feedback</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="summary-content">
+                            <h3 id="averageFeedbackRating">0.0</h3>
+                            <p>Average Rating</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="summary-content">
+                            <h3 id="feedbackTrend">+0%</h3>
+                            <p>Trend</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback-content">
+                    <div class="feedback-charts">
+                        <div class="chart-card">
+                            <h4>Rating Distribution</h4>
+                            <canvas id="ratingDistributionChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h4>Meal Breakdown</h4>
+                            <canvas id="mealBreakdownChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="feedback-table-section">
+                        <h4><i class="fas fa-table me-2"></i>Recent Feedback</h4>
+                        <div class="table-container">
+                            <table class="feedback-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>User</th>
+                                        <th>Meal</th>
+                                        <th>Rating</th>
+                                        <th>Comments</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="feedbackTableBody">
+                                    <!-- Feedback data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination-controls" id="feedbackPagination">
+                            <!-- Pagination will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint Management Section -->
+            <div class="content-section" id="complaints">
+                <div class="complaints-header">
+                    <h2><i class="fas fa-exclamation-triangle me-3"></i>Complaint Management</h2>
+                    <div class="complaints-controls">
+                        <select id="complaintStatus" class="form-select">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                        <button class="btn btn-success" onclick="resolveAllPending()" id="resolveAllBtn">
+                            <i class="fas fa-check-double me-2"></i>Resolve All Pending
+                        </button>
+                    </div>
+                </div>
+
+                <div class="complaints-stats">
+                    <div class="complaint-stat-card pending">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="pendingComplaints">0</h3>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                    <div class="complaint-stat-card resolved">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="resolvedComplaints">0</h3>
+                            <p>Resolved</p>
+                        </div>
+                    </div>
+                    <div class="complaint-stat-card total">
+                        <div class="stat-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalComplaints">0</h3>
+                            <p>Total</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="complaints-content">
+                    <div class="complaints-list" id="complaintsContainer">
+                        <!-- Complaints will be loaded here -->
+                    </div>
+                    <div class="pagination-controls" id="complaintsPagination">
+                        <!-- Pagination will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emotion Analysis Section -->
+            <div class="content-section" id="emotion-analysis">
+                <div class="emotion-header">
+                    <h2><i class="fas fa-smile me-3"></i>Emotion Analysis</h2>
+                    <div class="emotion-controls">
+                        <select id="emotionTimeframe" class="form-select">
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="generateEmotionReport()">
+                            <i class="fas fa-chart-pie me-2"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+
+                <div class="emotion-overview">
+                    <div class="emotion-card positive">
+                        <div class="emotion-icon">😊</div>
+                        <div class="emotion-content">
+                            <h3 id="positiveCount">0</h3>
+                            <p>Positive</p>
+                            <span class="emotion-percentage" id="positivePercent">0%</span>
+                        </div>
+                    </div>
+                    <div class="emotion-card neutral">
+                        <div class="emotion-icon">😐</div>
+                        <div class="emotion-content">
+                            <h3 id="neutralCount">0</h3>
+                            <p>Neutral</p>
+                            <span class="emotion-percentage" id="neutralPercent">0%</span>
+                        </div>
+                    </div>
+                    <div class="emotion-card negative">
+                        <div class="emotion-icon">😞</div>
+                        <div class="emotion-content">
+                            <h3 id="negativeCount">0</h3>
+                            <p>Negative</p>
+                            <span class="emotion-percentage" id="negativePercent">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="emotion-analysis-grid">
+                    <div class="meal-emotions-section">
+                        <h3><i class="fas fa-utensils me-2"></i>Today's Meal Emotions</h3>
+                        <div class="meal-emotion-cards">
+                            <div class="meal-emotion-card" data-meal="breakfast">
+                                <div class="meal-header">
+                                    <span class="meal-emoji">🍳</span>
+                                    <h4>Breakfast</h4>
+                                </div>
+                                <div class="emotion-bars">
+                                    <div class="emotion-bar positive">
+                                        <span class="bar-label">😊</span>
+                                        <div class="bar-fill" data-emotion="positive" data-meal="breakfast"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                    <div class="emotion-bar neutral">
+                                        <span class="bar-label">😐</span>
+                                        <div class="bar-fill" data-emotion="neutral" data-meal="breakfast"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                    <div class="emotion-bar negative">
+                                        <span class="bar-label">😞</span>
+                                        <div class="bar-fill" data-emotion="negative" data-meal="breakfast"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="meal-emotion-card" data-meal="lunch">
+                                <div class="meal-header">
+                                    <span class="meal-emoji">🍽️</span>
+                                    <h4>Lunch</h4>
+                                </div>
+                                <div class="emotion-bars">
+                                    <div class="emotion-bar positive">
+                                        <span class="bar-label">😊</span>
+                                        <div class="bar-fill" data-emotion="positive" data-meal="lunch"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                    <div class="emotion-bar neutral">
+                                        <span class="bar-label">😐</span>
+                                        <div class="bar-fill" data-emotion="neutral" data-meal="lunch"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                    <div class="emotion-bar negative">
+                                        <span class="bar-label">😞</span>
+                                        <div class="bar-fill" data-emotion="negative" data-meal="lunch"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="meal-emotion-card" data-meal="dinner">
+                                <div class="meal-header">
+                                    <span class="meal-emoji">🍛</span>
+                                    <h4>Dinner</h4>
+                                </div>
+                                <div class="emotion-bars">
+                                    <div class="emotion-bar positive">
+                                        <span class="bar-label">😊</span>
+                                        <div class="bar-fill" data-emotion="positive" data-meal="dinner"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                    <div class="emotion-bar neutral">
+                                        <span class="bar-label">😐</span>
+                                        <div class="bar-fill" data-emotion="neutral" data-meal="dinner"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                    <div class="emotion-bar negative">
+                                        <span class="bar-label">😞</span>
+                                        <div class="bar-fill" data-emotion="negative" data-meal="dinner"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="meal-emotion-card" data-meal="snacks">
+                                <div class="meal-header">
+                                    <span class="meal-emoji">🍪</span>
+                                    <h4>Snacks</h4>
+                                </div>
+                                <div class="emotion-bars">
+                                    <div class="emotion-bar positive">
+                                        <span class="bar-label">😊</span>
+                                        <div class="bar-fill" data-emotion="positive" data-meal="snacks"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                    <div class="emotion-bar neutral">
+                                        <span class="bar-label">😐</span>
+                                        <div class="bar-fill" data-emotion="neutral" data-meal="snacks"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                    <div class="emotion-bar negative">
+                                        <span class="bar-label">😞</span>
+                                        <div class="bar-fill" data-emotion="negative" data-meal="snacks"></div>
+                                        <span class="bar-count">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dish-analysis-section">
+                        <h3><i class="fas fa-trophy me-2"></i>Top Dishes Analysis</h3>
+                        <div class="dish-analysis-grid">
+                            <div class="dish-list liked">
+                                <h4><i class="fas fa-thumbs-up me-2"></i>Most Liked Dishes</h4>
+                                <div id="topLikedDishes">
+                                    <!-- Top liked dishes will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="dish-list disliked">
+                                <h4><i class="fas fa-thumbs-down me-2"></i>Most Disliked Dishes</h4>
+                                <div id="topDislikedDishes">
+                                    <!-- Top disliked dishes will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Notifications Section -->
+            <div class="content-section" id="notifications">
+                <div class="notifications-header">
+                    <h2><i class="fas fa-bell me-3"></i>Send Notifications</h2>
+                    <div class="notifications-stats">
+                        <span class="stat-badge">
+                            <i class="fas fa-paper-plane me-1"></i>
+                            <span id="sentNotifications">0</span> Sent Today
+                        </span>
+                    </div>
+                </div>
+
+                <div class="notification-form-container">
+                    <form id="notificationForm" class="notification-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="notificationRecipient">
+                                    <i class="fas fa-users me-2"></i>Send To
+                                </label>
+                                <select id="notificationRecipient" class="form-select" required>
+                                    <option value="">Select Recipients</option>
+                                    <option value="all">All Users</option>
+                                    <option value="students">All Students</option>
+                                    <option value="specific">Specific User</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="specificUserGroup" style="display: none;">
+                                <label for="specificUser">
+                                    <i class="fas fa-user me-2"></i>Username
+                                </label>
+                                <input type="text" id="specificUser" class="form-control" placeholder="Enter username">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="notificationType">
+                                    <i class="fas fa-tag me-2"></i>Type
+                                </label>
+                                <select id="notificationType" class="form-select" required>
+                                    <option value="info">Info</option>
+                                    <option value="success">Success</option>
+                                    <option value="warning">Warning</option>
+                                    <option value="error">Error</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="notificationPriority">
+                                    <i class="fas fa-exclamation me-2"></i>Priority
+                                </label>
+                                <select id="notificationPriority" class="form-select">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notificationMessage">
+                                <i class="fas fa-comment me-2"></i>Message
+                            </label>
+                            <textarea id="notificationMessage" class="form-control" rows="4" 
+                                placeholder="Enter your notification message..." required></textarea>
+                            <div class="character-count">
+                                <span id="messageLength">0</span>/500 characters
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="previewNotification()">
+                                <i class="fas fa-eye me-2"></i>Preview
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Send Notification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="recent-notifications">
+                    <h3><i class="fas fa-history me-2"></i>Recent Notifications</h3>
+                    <div class="notifications-list" id="recentNotificationsList">
+                        <!-- Recent notifications will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="content-section" id="settings">
+                <div class="settings-header">
+                    <h2><i class="fas fa-cog me-3"></i>System Settings</h2>
+                    <div class="settings-info">
+                        <span class="info-badge">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Role: <span id="currentUserRole">Full Admin</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-section">
+                        <h3><i class="fas fa-users me-2"></i>User Management</h3>
+                        <div class="settings-options">
+                            <div class="setting-item">
+                                <label>Auto-approve new registrations</label>
+                                <input type="checkbox" id="autoApproveUsers" class="toggle-switch">
+                            </div>
+                            <div class="setting-item">
+                                <label>Require email verification</label>
+                                <input type="checkbox" id="requireEmailVerification" class="toggle-switch" checked>
+                            </div>
+                            <div class="setting-item">
+                                <label>Maximum daily feedback submissions</label>
+                                <input type="number" id="maxDailySubmissions" class="form-control" value="4" min="1" max="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-bell me-2"></i>Notification Settings</h3>
+                        <div class="settings-options">
+                            <div class="setting-item">
+                                <label>Enable real-time notifications</label>
+                                <input type="checkbox" id="enableRealTimeNotifications" class="toggle-switch" checked>
+                            </div>
+                            <div class="setting-item">
+                                <label>Notification retention (days)</label>
+                                <input type="number" id="notificationRetention" class="form-control" value="7" min="1" max="30">
+                            </div>
+                            <div class="setting-item">
+                                <label>Send email notifications</label>
+                                <input type="checkbox" id="sendEmailNotifications" class="toggle-switch">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-chart-line me-2"></i>Analytics Settings</h3>
+                        <div class="settings-options">
+                            <div class="setting-item">
+                                <label>Data retention period (months)</label>
+                                <input type="number" id="dataRetention" class="form-control" value="12" min="1" max="60">
+                            </div>
+                            <div class="setting-item">
+                                <label>Enable emotion analysis</label>
+                                <input type="checkbox" id="enableEmotionAnalysis" class="toggle-switch" checked>
+                            </div>
+                            <div class="setting-item">
+                                <label>Auto-generate daily reports</label>
+                                <input type="checkbox" id="autoGenerateReports" class="toggle-switch">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-database me-2"></i>System Maintenance</h3>
+                        <div class="settings-options">
+                            <div class="setting-item">
+                                <label>Database backup frequency</label>
+                                <select id="backupFrequency" class="form-select">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>System maintenance mode</label>
+                                <input type="checkbox" id="maintenanceMode" class="toggle-switch">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="btn btn-success" onclick="saveSettings()">
+                        <i class="fas fa-save me-2"></i>Save Settings
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetSettings()">
+                        <i class="fas fa-undo me-2"></i>Reset to Defaults
+                    </button>
+                    <button class="btn btn-danger" onclick="exportSystemData()" id="exportDataBtn">
+                        <i class="fas fa-download me-2"></i>Export System Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Global variables
+        let currentAdmin = null;
+
+        // Global variables
+        let currentSection = 'dashboard';
+        let refreshInterval = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdminData();
+            setupEventListeners();
+            loadDashboardData();
+            
+            // Apply role-based restrictions
+            applyRoleRestrictions();
+            
+            // Start real-time updates
+            startRealTimeUpdates();
+            
+            // Initialize all sections
+            initializeAllSections();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('show');
+                mobileMenuBtn.classList.toggle('active');
+                
+                // Change icon
+                const icon = mobileMenuBtn.querySelector('i');
+                if (sidebar.classList.contains('open')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('show');
+                mobileMenuBtn.classList.remove('active');
+                mobileMenuBtn.querySelector('i').className = 'fas fa-bars';
+            });
+
+            // Close sidebar when nav item is clicked on mobile
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('open');
+                        sidebarOverlay.classList.remove('show');
+                    }
+                });
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.section;
+                    showSection(section);
+                    
+                    // Update active nav item
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // Show section
+        function showSection(sectionName) {
+            // Update current section
+            currentSection = sectionName;
+            
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionName);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav item
+            const activeNav = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+            
+            // Update page title
+            const titles = {
+                dashboard: 'Dashboard Overview',
+                analytics: 'Analytics & Reports',
+                users: 'User Management',
+                'feedback-review': 'Feedback Review',
+                complaints: 'Complaint Management',
+                'emotion-analysis': 'Emotion Analysis',
+                notifications: 'Send Notifications',
+                settings: 'System Settings'
+            };
+            
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle) {
+                pageTitle.textContent = titles[sectionName] || 'Dashboard';
+            }
+            
+            // Load section-specific data
+            switch (sectionName) {
+                case 'analytics':
+                    loadAnalyticsData();
+                    break;
+                case 'feedback-review':
+                    loadFeedbackReview();
+                    break;
+                case 'complaints':
+                    loadComplaints();
+                    break;
+                case 'emotion-analysis':
+                    loadEmotionAnalysis();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'dashboard':
+                    loadDashboardData();
+                    loadSystemHealth();
+                    loadActivityFeed();
+                    break;
+            }
+        }
+
+        // Load admin data
+        function loadAdminData() {
+            const adminData = localStorage.getItem('admin');
+            const token = localStorage.getItem('adminToken');
+            
+            if (!adminData || !token) {
+                // No admin logged in, redirect to admin login
+                window.location.href = '/admin-login';
+                return;
+            }
+            
+            try {
+                currentAdmin = JSON.parse(adminData);
+                
+                // Update UI with admin info
+                const adminNameEl = document.getElementById('adminName');
+                if (adminNameEl) {
+                    adminNameEl.textContent = currentAdmin.username || currentAdmin.name || 'Administrator';
+                }
+                
+                console.log('Admin loaded:', currentAdmin.username);
+            } catch (error) {
+                console.error('Error parsing admin data:', error);
+                localStorage.removeItem('admin');
+                localStorage.removeItem('adminToken');
+                window.location.href = '/admin-login';
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/admin/analytics/comprehensive?timeframe=today');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.analytics) {
+                        const stats = data.analytics;
+                        
+                        // Update dashboard stats with real data
+                        document.getElementById('totalUsers').textContent = stats.totalUsers || '10';
+                        document.getElementById('totalFeedback').textContent = stats.totalFeedback || '9';
+                        document.getElementById('totalComplaints').textContent = stats.totalComplaints || '0';
+                        document.getElementById('avgRating').textContent = stats.averageRating || '4.2';
+                        
+                        console.log('Dashboard data loaded:', stats);
+                    } else {
+                        setFallbackData();
+                    }
+                } else {
+                    setFallbackData();
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                setFallbackData();
+            }
+        }
+        
+        // Set fallback data for dashboard
+        function setFallbackData() {
+            document.getElementById('totalUsers').textContent = '10';
+            document.getElementById('totalFeedback').textContent = '9';
+            document.getElementById('totalComplaints').textContent = '0';
+            document.getElementById('avgRating').textContent = '4.2';
+            
+            // Update complaint badge
+            const complaintBadge = document.getElementById('complaintBadge');
+            if (complaintBadge) {
+                complaintBadge.textContent = '0';
+                complaintBadge.classList.remove('show');
+            }
+        }
+        // Load system health
+        async function loadSystemHealth() {
+            try {
+                const response = await fetch('/api/admin/system/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update health indicators
+                    updateHealthIndicator('database', data.database);
+                    updateHealthIndicator('serverLoad', data.serverLoad);
+                    updateHealthIndicator('memoryUsage', data.memoryUsage);
+                }
+            } catch (error) {
+                console.error('Error loading system health:', error);
+            }
+        }
+
+        // Update health indicators
+        function updateHealthIndicator(type, percentage) {
+            const element = document.querySelector(`[data-health="${type}"]`);
+            if (element) {
+                const progressBar = element.querySelector('.progress-bar');
+                const percentText = element.querySelector('.percentage');
+                
+                if (progressBar) {
+                    progressBar.style.width = `${percentage}%`;
+                    progressBar.className = `progress-bar ${percentage >= 80 ? 'bg-success' : percentage >= 60 ? 'bg-warning' : 'bg-danger'}`;
+                }
+                if (percentText) {
+                    percentText.textContent = `${percentage}%`;
+                }
+            }
+        }
+
+        // Load activity feed
+        async function loadActivityFeed() {
+            try {
+                const response = await fetch('/api/admin/activity/feed');
+                if (response.ok) {
+                    const activities = await response.json();
+                    displayActivityFeed(activities);
+                }
+            } catch (error) {
+                console.error('Error loading activity feed:', error);
+            }
+        }
+
+        // Display activity feed
+        function displayActivityFeed(activities) {
+            const feedContainer = document.getElementById('activityFeed');
+            if (!feedContainer) return;
+            
+            feedContainer.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item animate__animated animate__fadeInUp';
+                activityItem.innerHTML = `
+                    <div class="activity-icon ${activity.type}">
+                        <i class="fas fa-${activity.icon}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">
+                            <strong>${activity.user}</strong> ${activity.action}
+                        </div>
+                        <div class="activity-time">
+                            ${formatTimeAgo(new Date(activity.time))}
+                        </div>
+                    </div>
+                `;
+                feedContainer.appendChild(activityItem);
+            });
+        }
+
+        // Format time ago
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+            return `${Math.floor(diffInSeconds / 86400)} days ago`;
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const users = await response.json();
+                    displayUsers(users);
+                } else {
+                    console.error('Failed to load users');
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                // Show sample data for now
+                displayUsers([
+                    { id: 1, username: 'student001', role: 'student', status: 'active', lastLogin: '2024-01-08' },
+                    { id: 2, username: 'admin', role: 'admin', status: 'active', lastLogin: '2024-01-08' }
+                ]);
+            }
+        }
+
+        // Display users in table
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.role}</td>
+                    <td><span class="status-badge status-${user.status}">${user.status}</span></td>
+                    <td>${user.lastLogin || 'Never'}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editUser(${user.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteUser(${user.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // User management functions
+        function showAddUserModal() {
+            const username = prompt('Enter username:');
+            if (!username) return;
+            
+            const password = prompt('Enter password:');
+            if (!password) return;
+            
+            const role = prompt('Enter role (student/admin):');
+            if (!role || !['student', 'admin'].includes(role)) {
+                alert('Invalid role. Please enter "student" or "admin"');
+                return;
+            }
+            
+            addUser(username, password, role);
+        }
+
+        async function addUser(username, password, role) {
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, role })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('User added successfully!');
+                    loadUsers(); // Refresh the user list
+                } else {
+                    alert('Failed to add user: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error adding user: ' + error.message);
+            }
+        }
+
+        async function editUser(userId) {
+            try {
+                // First, get the current user data
+                const response = await fetch(`/api/admin/users/${userId}`);
+                const user = await response.json();
+                
+                if (!response.ok) {
+                    alert('Failed to fetch user data');
+                    return;
+                }
+                
+                // Prompt for new values
+                const newUsername = prompt('Enter new username:', user.username);
+                if (!newUsername) return;
+                
+                const newRole = prompt('Enter new role (student/admin):', user.role);
+                if (!newRole || !['student', 'admin'].includes(newRole)) {
+                    alert('Invalid role. Please enter "student" or "admin"');
+                    return;
+                }
+                
+                // Update the user
+                const updateResponse = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: newUsername, role: newRole })
+                });
+
+                const result = await updateResponse.json();
+                
+                if (updateResponse.ok) {
+                    alert('User updated successfully!');
+                    loadUsers(); // Refresh the user list
+                } else {
+                    alert('Failed to update user: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error updating user: ' + error.message);
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                try {
+                    const response = await fetch(`/api/admin/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        alert('User deleted successfully!');
+                        loadUsers(); // Refresh the user list
+                        loadDashboardData(); // Refresh stats
+                    } else {
+                        alert('Failed to delete user. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    alert('Network error. Please try again.');
+                }
+            }
+        }
+
+        // Refresh data
+        function refreshData() {
+            loadDashboardData();
+            const currentSection = document.querySelector('.nav-item.active').dataset.section;
+            if (currentSection === 'users') {
+                loadUsers();
+            }
+        }
+
+        // Quick action functions
+        function exportData() {
+            alert('Exporting data... This will download a CSV file with all feedback and user data.');
+            // Implement actual export functionality
+        }
+
+        function sendNotification() {
+            const message = prompt('Enter notification message:');
+            if (message) {
+                alert(`Notification sent to all users: "${message}"`);
+                // Implement actual notification system
+            }
+        }
+
+        function generateReport() {
+            alert('Generating comprehensive report... This will create a PDF with analytics and insights.');
+            // Implement actual report generation
+        }
+
+        function backupDatabase() {
+            if (confirm('Are you sure you want to backup the database? This may take a few minutes.')) {
+                alert('Database backup initiated. You will receive an email when complete.');
+                // Implement actual backup functionality
+            }
+        }
+
+        function refreshActivity() {
+            // Simulate refreshing activity feed
+            const activities = [
+                {
+                    icon: 'feedback',
+                    iconClass: 'fas fa-star',
+                    title: 'New Feedback',
+                    description: 'from student' + Math.floor(Math.random() * 100),
+                    time: 'Just now'
+                },
+                {
+                    icon: 'complaint',
+                    iconClass: 'fas fa-exclamation-triangle',
+                    title: 'Complaint Updated',
+                    description: 'Service Issue - In Progress',
+                    time: '1 minute ago'
+                },
+                {
+                    icon: 'user',
+                    iconClass: 'fas fa-user-plus',
+                    title: 'New User Registration',
+                    description: 'student' + Math.floor(Math.random() * 1000),
+                    time: '3 minutes ago'
+                }
+            ];
+
+            const activityFeed = document.getElementById('activityFeed');
+            activityFeed.innerHTML = '';
+
+            activities.forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                activityItem.innerHTML = `
+                    <div class="activity-icon ${activity.icon}">
+                        <i class="${activity.iconClass}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p><strong>${activity.title}</strong> ${activity.description}</p>
+                        <span class="activity-time">${activity.time}</span>
+                    </div>
+                `;
+                activityFeed.appendChild(activityItem);
+            });
+        }
+
+        // Auto-refresh activity feed every 30 seconds
+        setInterval(refreshActivity, 30000);
+
+        // Export Data functionality
+        async function exportData() {
+            const startDate = prompt('Enter start date (YYYY-MM-DD):', '2025-01-01');
+            if (!startDate) return;
+            
+            const endDate = prompt('Enter end date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (!endDate) return;
+            
+            const dataType = prompt('Enter data type (feedback/complaints/users):', 'feedback');
+            if (!dataType || !['feedback', 'complaints', 'users'].includes(dataType)) {
+                alert('Invalid data type. Please enter: feedback, complaints, or users');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ startDate, endDate, dataType })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Create and download CSV file
+                    const blob = new Blob([result.data], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = result.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    alert(`Export completed! ${result.recordCount} records exported.`);
+                } else {
+                    alert('Export failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Export failed. Please try again.');
+            }
+        }
+
+        // Send Notification functionality
+        async function sendNotification() {
+            const recipient = prompt('Send to (username or "all" for everyone):', 'all');
+            if (!recipient) return;
+            
+            const message = prompt('Enter notification message:');
+            if (!message) return;
+            
+            const type = prompt('Notification type (info/success/warning/error):', 'info');
+            if (!type || !['info', 'success', 'warning', 'error'].includes(type)) {
+                alert('Invalid type. Please enter: info, success, warning, or error');
+                return;
+            }
+            
+            // Get admin name from current user or default
+            const adminName = currentAdmin ? currentAdmin.username : 'Admin';
+            
+            try {
+                const response = await fetch('/api/admin/notifications/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ recipient, message, type, adminName })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Notification sent successfully!');
+                } else {
+                    alert('Failed to send notification: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Notification error:', error);
+                alert('Failed to send notification. Please try again.');
+            }
+        }
+
+        // Generate Report functionality
+        async function generateReport() {
+            const reportType = prompt('Report type (dashboard):', 'dashboard');
+            if (!reportType) return;
+            
+            const period = prompt('Period (week/month/year):', 'month');
+            if (!period) return;
+            
+            try {
+                const response = await fetch(`/api/admin/reports/generate?type=${reportType}&period=${period}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayReport(result.data);
+                    alert('Report generated successfully!');
+                } else {
+                    alert('Failed to generate report: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Report generation error:', error);
+                alert('Failed to generate report. Please try again.');
+            }
+        }
+
+        // Display Report with Charts
+        function displayReport(reportData) {
+            // Create a modal or new section to display the report
+            const reportModal = document.createElement('div');
+            reportModal.className = 'modal fade show';
+            reportModal.style.display = 'block';
+            reportModal.innerHTML = `
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">📊 Dashboard Report</h5>
+                            <button type="button" class="btn-close" onclick="this.closest('.modal').remove()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Feedback by Meal Type</h6>
+                                    <canvas id="mealTypeChart" width="400" height="200"></canvas>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Complaints by Type</h6>
+                                    <canvas id="complaintTypeChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6>User Growth Trend</h6>
+                                    <canvas id="userGrowthChart" width="800" height="300"></canvas>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h6>Report Summary</h6>
+                                <p><strong>Generated:</strong> ${new Date(reportData.generatedAt).toLocaleString()}</p>
+                                <p><strong>Period:</strong> ${reportData.period}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(reportModal);
+            
+            // Create simple charts using canvas (basic implementation)
+            createPieChart('mealTypeChart', reportData.mealTypeFeedback);
+            createPieChart('complaintTypeChart', reportData.complaintTypes);
+            createLineChart('userGrowthChart', reportData.userGrowth);
+        }
+
+        // Simple Pie Chart implementation
+        function createPieChart(canvasId, data) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 20;
+            
+            const total = data.reduce((sum, item) => sum + item.count, 0);
+            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+            
+            let currentAngle = 0;
+            
+            data.forEach((item, index) => {
+                const sliceAngle = (item.count / total) * 2 * Math.PI;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fill();
+                
+                // Add labels
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7);
+                const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7);
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.meal_type || item.complaint_type, labelX, labelY);
+                
+                currentAngle += sliceAngle;
+            });
+        }
+
+        // Simple Line Chart implementation
+        function createLineChart(canvasId, data) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const padding = 40;
+            const chartWidth = canvas.width - 2 * padding;
+            const chartHeight = canvas.height - 2 * padding;
+            
+            if (data.length === 0) return;
+            
+            const maxValue = Math.max(...data.map(d => d.count));
+            const minValue = 0;
+            
+            // Draw axes
+            ctx.strokeStyle = '#ccc';
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+            
+            // Draw line
+            ctx.strokeStyle = '#36A2EB';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            data.forEach((point, index) => {
+                const x = padding + (index / (data.length - 1)) * chartWidth;
+                const y = canvas.height - padding - ((point.count - minValue) / (maxValue - minValue)) * chartHeight;
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // Draw points
+                ctx.fillStyle = '#36A2EB';
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+            
+            ctx.stroke();
+        }
+
+        // Database Management functionality
+        async function backupDatabase() {
+            try {
+                const response = await fetch('/api/admin/database/tables', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayDatabaseTables(result.tables);
+                } else {
+                    alert('Failed to load database tables');
+                }
+            } catch (error) {
+                console.error('Database error:', error);
+                alert('Failed to access database. Please try again.');
+            }
+        }
+
+        // Display Database Tables
+        function displayDatabaseTables(tables) {
+            const tableModal = document.createElement('div');
+            tableModal.className = 'modal fade show';
+            tableModal.style.display = 'block';
+            tableModal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">🗄️ Database Tables</h5>
+                            <button type="button" class="btn-close" onclick="this.closest('.modal').remove()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Table Name</th>
+                                            <th>Columns</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tables.map(table => `
+                                            <tr>
+                                                <td><strong>${table.TABLE_NAME}</strong></td>
+                                                <td>${table.COLUMN_COUNT} columns</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary" onclick="viewTableData('${table.TABLE_NAME}')">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(tableModal);
+        }
+
+        // View Table Data
+        async function viewTableData(tableName) {
+            try {
+                const response = await fetch(`/api/admin/database/table/${tableName}?page=1&limit=20`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    displayTableData(tableName, result.data);
+                } else {
+                    alert(`No data found in table: ${tableName}`);
+                }
+            } catch (error) {
+                console.error('Table data error:', error);
+                alert('Failed to load table data. Please try again.');
+            }
+        }
+
+        // Display Table Data
+        function displayTableData(tableName, data) {
+            if (data.length === 0) return;
+            
+            const columns = Object.keys(data[0]);
+            
+            const dataModal = document.createElement('div');
+            dataModal.className = 'modal fade show';
+            dataModal.style.display = 'block';
+            dataModal.innerHTML = `
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">📋 ${tableName} Data</h5>
+                            <button type="button" class="btn-close" onclick="this.closest('.modal').remove()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-sm">
+                                    <thead>
+                                        <tr>
+                                            ${columns.map(col => `<th>${col}</th>`).join('')}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.map(row => `
+                                            <tr>
+                                                ${columns.map(col => `<td>${row[col] || ''}</td>`).join('')}
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-muted mt-3">Showing first 20 records</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dataModal);
+        }
+
+        // Apply role-based restrictions (removed - simple admin system)
+        function applyRoleRestrictions() {
+            // Simple admin system - all admins have full access
+            console.log('Simple admin system loaded - full access granted');
+        }
+
+        // Start real-time updates
+        function startRealTimeUpdates() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            
+            refreshInterval = setInterval(() => {
+                switch (currentSection) {
+                    case 'dashboard':
+                        loadDashboardData();
+                        loadSystemHealth();
+                        loadActivityFeed();
+                        break;
+                    case 'analytics':
+                        loadAnalyticsData();
+                        break;
+                    case 'feedback-review':
+                        loadFeedbackReview();
+                        break;
+                    case 'complaints':
+                        loadComplaints();
+                        break;
+                    case 'emotion-analysis':
+                        loadEmotionAnalysis();
+                        break;
+                }
+                updateComplaintBadge();
+            }, 30000);
+        }
+
+        // Initialize all sections
+        function initializeAllSections() {
+            // Analytics timeframe change
+            const analyticsTimeframe = document.getElementById('analyticsTimeframe');
+            if (analyticsTimeframe) {
+                analyticsTimeframe.addEventListener('change', loadAnalyticsData);
+            }
+            
+            // Feedback controls
+            const feedbackTimeframe = document.getElementById('feedbackTimeframe');
+            const feedbackMealType = document.getElementById('feedbackMealType');
+            if (feedbackTimeframe) feedbackTimeframe.addEventListener('change', loadFeedbackReview);
+            if (feedbackMealType) feedbackMealType.addEventListener('change', loadFeedbackReview);
+            
+            // Complaint status change
+            const complaintStatus = document.getElementById('complaintStatus');
+            if (complaintStatus) complaintStatus.addEventListener('change', loadComplaints);
+            
+            // Emotion timeframe change
+            const emotionTimeframe = document.getElementById('emotionTimeframe');
+            if (emotionTimeframe) emotionTimeframe.addEventListener('change', loadEmotionAnalysis);
+            
+            // Notification form
+            const notificationForm = document.getElementById('notificationForm');
+            if (notificationForm) notificationForm.addEventListener('submit', sendNotification);
+            
+            // Notification recipient change
+            const notificationRecipient = document.getElementById('notificationRecipient');
+            if (notificationRecipient) {
+                notificationRecipient.addEventListener('change', function() {
+                    const specificUserGroup = document.getElementById('specificUserGroup');
+                    specificUserGroup.style.display = this.value === 'specific' ? 'block' : 'none';
+                });
+            }
+            
+            // Message length counter
+            const notificationMessage = document.getElementById('notificationMessage');
+            if (notificationMessage) {
+                notificationMessage.addEventListener('input', function() {
+                    const messageLength = document.getElementById('messageLength');
+                    if (messageLength) messageLength.textContent = this.value.length;
+                });
+            }
+        }
+
+        // Load Analytics Data
+        async function loadAnalyticsData() {
+            try {
+                const timeframe = document.getElementById('analyticsTimeframe')?.value || 'today';
+                const response = await fetch(`/api/admin/analytics/comprehensive?timeframe=${timeframe}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        displayAnalyticsData(data.analytics);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        // Display Analytics Data
+        function displayAnalyticsData(analytics) {
+            // Update overview cards
+            document.getElementById('analyticsUsers').textContent = analytics.totalUsers;
+            document.getElementById('analyticsFeedback').textContent = analytics.totalFeedback;
+            document.getElementById('analyticsComplaints').textContent = analytics.totalComplaints;
+            document.getElementById('analyticsResolved').textContent = analytics.resolvedComplaints;
+            
+            // Update meal analytics
+            Object.entries(analytics.mealAnalytics).forEach(([meal, data]) => {
+                const mealCard = document.querySelector(`[data-meal="${meal}"]`);
+                if (mealCard) {
+                    const countSpan = mealCard.querySelector('.meal-count');
+                    const ratingSpan = mealCard.querySelector('.meal-rating');
+                    if (countSpan) countSpan.textContent = `${data.count} feedback`;
+                    if (ratingSpan) ratingSpan.textContent = `★ ${data.avgRating}`;
+                }
+            });
+        }
+
+        // Load Feedback Review
+        async function loadFeedbackReview() {
+            try {
+                const timeframe = document.getElementById('feedbackTimeframe')?.value || 'today';
+                const mealType = document.getElementById('feedbackMealType')?.value || 'all';
+                
+                const response = await fetch(`/api/admin/feedback-review?timeframe=${timeframe}&mealType=${mealType}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        displayFeedbackReview(data);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading feedback review:', error);
+            }
+        }
+
+        // Display Feedback Review
+        function displayFeedbackReview(data) {
+            // Update summary cards
+            document.getElementById('totalFeedbackCount').textContent = data.summary.totalFeedback;
+            document.getElementById('averageFeedbackRating').textContent = data.summary.averageRating;
+            
+            // Update feedback table
+            const tableBody = document.getElementById('feedbackTableBody');
+            if (tableBody && data.feedback) {
+                tableBody.innerHTML = data.feedback.map(feedback => `
+                    <tr>
+                        <td>${new Date(feedback.feedback_date).toLocaleDateString()}</td>
+                        <td>${feedback.user_id}</td>
+                        <td><span class="meal-badge ${feedback.meal_type}">${feedback.meal_type}</span></td>
+                        <td>${calculateAverageRating(feedback.item_ratings)}</td>
+                        <td>${feedback.overall_comments || 'No comments'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="viewFeedbackDetails(${feedback.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // Load Complaints
+        async function loadComplaints() {
+            try {
+                const status = document.getElementById('complaintStatus')?.value || 'all';
+                const response = await fetch(`/api/admin/complaints?status=${status}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        displayComplaints(data);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading complaints:', error);
+            }
+        }
+
+        // Display Complaints
+        function displayComplaints(data) {
+            // Update stats
+            document.getElementById('pendingComplaints').textContent = data.statusCounts.pending;
+            document.getElementById('resolvedComplaints').textContent = data.statusCounts.resolved;
+            document.getElementById('totalComplaints').textContent = data.statusCounts.total;
+            
+            // Update complaints list
+            const container = document.getElementById('complaintsContainer');
+            if (container && data.complaints) {
+                container.innerHTML = data.complaints.map(complaint => `
+                    <div class="complaint-card ${complaint.status}">
+                        <div class="complaint-header">
+                            <div class="complaint-info">
+                                <h5>${complaint.category || 'General'}</h5>
+                                <span class="complaint-date">${new Date(complaint.complaint_date).toLocaleDateString()}</span>
+                            </div>
+                            <div class="complaint-status">
+                                <span class="status-badge ${complaint.status}">${complaint.status}</span>
+                            </div>
+                        </div>
+                        <div class="complaint-content">
+                            <p>${complaint.description}</p>
+                            <div class="complaint-meta">
+                                <span><i class="fas fa-user"></i> ${complaint.user_id}</span>
+                                <span><i class="fas fa-flag"></i> ${complaint.severity || 'Medium'}</span>
+                            </div>
+                        </div>
+                        <div class="complaint-actions">
+                            ${complaint.status === 'pending' ? `
+                                <button class="btn btn-success btn-sm" onclick="resolveComplaint(${complaint.id})">
+                                    <i class="fas fa-check"></i> Resolve
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-info btn-sm" onclick="viewComplaintDetails(${complaint.id})">
+                                <i class="fas fa-eye"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Load Emotion Analysis
+        async function loadEmotionAnalysis() {
+            try {
+                const timeframe = document.getElementById('emotionTimeframe')?.value || 'today';
+                const response = await fetch(`/api/admin/emotion-analysis?timeframe=${timeframe}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        displayEmotionAnalysis(data.emotionAnalysis);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading emotion analysis:', error);
+            }
+        }
+
+        // Display Emotion Analysis
+        function displayEmotionAnalysis(analysis) {
+            // Update overview cards
+            const total = analysis.overallSentiment.positive + analysis.overallSentiment.neutral + analysis.overallSentiment.negative;
+            
+            document.getElementById('positiveCount').textContent = analysis.overallSentiment.positive;
+            document.getElementById('neutralCount').textContent = analysis.overallSentiment.neutral;
+            document.getElementById('negativeCount').textContent = analysis.overallSentiment.negative;
+            
+            if (total > 0) {
+                document.getElementById('positivePercent').textContent = `${Math.round((analysis.overallSentiment.positive / total) * 100)}%`;
+                document.getElementById('neutralPercent').textContent = `${Math.round((analysis.overallSentiment.neutral / total) * 100)}%`;
+                document.getElementById('negativePercent').textContent = `${Math.round((analysis.overallSentiment.negative / total) * 100)}%`;
+            }
+            
+            // Update meal emotion bars
+            Object.entries(analysis.mealEmotions).forEach(([meal, emotions]) => {
+                const mealCard = document.querySelector(`[data-meal="${meal}"]`);
+                if (mealCard) {
+                    const mealTotal = emotions.positive + emotions.neutral + emotions.negative;
+                    
+                    ['positive', 'neutral', 'negative'].forEach(emotion => {
+                        const barFill = mealCard.querySelector(`[data-emotion="${emotion}"]`);
+                        const barCount = mealCard.querySelector(`[data-emotion="${emotion}"] + .bar-count`);
+                        
+                        if (barFill && barCount) {
+                            const percentage = mealTotal > 0 ? (emotions[emotion] / mealTotal) * 100 : 0;
+                            barFill.style.width = `${percentage}%`;
+                            barCount.textContent = emotions[emotion];
+                        }
+                    });
+                }
+            });
+            
+            // Update top dishes
+            displayTopDishes(analysis.topLikedDishes, 'topLikedDishes', 'liked');
+            displayTopDishes(analysis.topDislikedDishes, 'topDislikedDishes', 'disliked');
+        }
+
+        // Display Top Dishes
+        function displayTopDishes(dishes, containerId, type) {
+            const container = document.getElementById(containerId);
+            if (container && dishes) {
+                container.innerHTML = dishes.map(dish => `
+                    <div class="dish-item ${type}">
+                        <div class="dish-name">${dish.name}</div>
+                        <div class="dish-rating">★ ${dish.avgRating}</div>
+                        <div class="dish-stats">
+                            ${dish.totalRatings} ratings
+                            ${type === 'liked' ? 
+                                `<span class="positive">${dish.positivePercent}% positive</span>` : 
+                                `<span class="negative">${dish.negativePercent}% negative</span>`
+                            }
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Send Notification
+        async function sendNotification(event) {
+            event.preventDefault();
+            
+            const recipient = document.getElementById('notificationRecipient').value;
+            const message = document.getElementById('notificationMessage').value;
+            const type = document.getElementById('notificationType').value;
+            const specificUser = document.getElementById('specificUser').value;
+            
+            let finalRecipient = recipient;
+            if (recipient === 'specific' && specificUser) {
+                finalRecipient = specificUser;
+            } else if (recipient === 'specific') {
+                alert('Please enter a username for specific user notification');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/notifications/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        recipient: finalRecipient,
+                        message: message,
+                        type: type,
+                        adminName: currentAdmin?.name || currentAdmin?.username || 'Admin'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Notification sent successfully!');
+                    document.getElementById('notificationForm').reset();
+                    document.getElementById('specificUserGroup').style.display = 'none';
+                    document.getElementById('messageLength').textContent = '0';
+                } else {
+                    alert('Failed to send notification: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Notification error:', error);
+                alert('Failed to send notification. Please try again.');
+            }
+        }
+
+        // Utility Functions
+        function calculateAverageRating(itemRatings) {
+            if (!itemRatings || Object.keys(itemRatings).length === 0) return '0.0';
+            const ratings = Object.values(itemRatings);
+            const average = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+            return average.toFixed(1);
+        }
+
+        function updateComplaintBadge() {
+            // This will be called by the real-time updates
+            loadComplaints().then(() => {
+                const pendingCount = document.getElementById('pendingComplaints')?.textContent || '0';
+                const badge = document.getElementById('complaintBadge');
+                if (badge) {
+                    badge.textContent = pendingCount;
+                    badge.classList.toggle('show', parseInt(pendingCount) > 0);
+                }
+            });
+        }
+
+        // Action Functions
+        async function resolveComplaint(complaintId) {
+            if (!currentAdmin?.permissions?.canResolveComplaints) {
+                alert('You do not have permission to resolve complaints');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/complaints/${complaintId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        status: 'resolved',
+                        resolvedBy: currentAdmin?.username || 'Admin'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Complaint resolved successfully!');
+                    loadComplaints(); // Refresh the complaints list
+                } else {
+                    alert('Failed to resolve complaint: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error resolving complaint:', error);
+                alert('Failed to resolve complaint. Please try again.');
+            }
+        }
+
+        function downloadReport() {
+            const timeframe = document.getElementById('analyticsTimeframe')?.value || 'today';
+            window.open(`/api/admin/export?type=analytics&timeframe=${timeframe}`, '_blank');
+        }
+
+        function exportFeedbackData() {
+            const timeframe = document.getElementById('feedbackTimeframe')?.value || 'today';
+            const mealType = document.getElementById('feedbackMealType')?.value || 'all';
+            window.open(`/api/admin/export?type=feedback&timeframe=${timeframe}&mealType=${mealType}`, '_blank');
+        }
+
+        function generateEmotionReport() {
+            const timeframe = document.getElementById('emotionTimeframe')?.value || 'today';
+            window.open(`/api/admin/export?type=emotion&timeframe=${timeframe}`, '_blank');
+        }
+
+        // Remove duplicate showSection function - already defined above
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('admin');
+            window.location.href = '/admin-login';
+        }
+
+        // Socket.IO events
+        socket.on('connect', () => {
+            console.log('Connected to real-time server');
+        });
+
+        socket.on('new-feedback', (data) => {
+            console.log('New feedback received:', data);
+            // Update badges and refresh data
+            refreshData();
+        });
+
+        socket.on('new-complaint', (data) => {
+            console.log('New complaint received:', data);
+            // Update badges and refresh data
+            refreshData();
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

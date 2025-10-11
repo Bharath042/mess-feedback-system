@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Mess Feedback System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Copy all the CSS from the original file - this is just a placeholder for the fixed JavaScript */
+        /* ... All CSS styles remain the same ... */
+    </style>
+</head>
+<body>
+    <!-- Copy all HTML content from original file -->
+    <!-- ... All HTML content remains the same ... -->
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Fixed JavaScript with proper database connections
+        
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Global variables
+        let currentAdmin = null;
+        let allUsers = [];
+        let filteredUsers = [];
+        let currentPage = 1;
+        const usersPerPage = 10;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdminData();
+            initializeEventListeners();
+        });
+
+        // Load admin data and dashboard statistics
+        async function loadAdminData() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/admin-login';
+                    return;
+                }
+
+                const response = await fetch('/api/admin/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const admin = await response.json();
+                    currentAdmin = admin;
+                    document.getElementById('adminName').textContent = admin.username;
+                    document.getElementById('adminAvatar').textContent = admin.username.charAt(0).toUpperCase();
+                    document.getElementById('welcomeText').textContent = `Welcome, ${admin.username}!`;
+                    
+                    // Load real dashboard statistics
+                    await loadDashboardStats();
+                } else {
+                    localStorage.removeItem('token');
+                    window.location.href = '/admin-login';
+                }
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                localStorage.removeItem('token');
+                window.location.href = '/admin-login';
+            }
+        }
+
+        // Load real dashboard statistics
+        async function loadDashboardStats() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/admin/dashboard-stats', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    
+                    // Update dashboard statistics with real data
+                    document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+                    document.getElementById('totalFeedback').textContent = stats.totalFeedback || 0;
+                    document.getElementById('avgRating').textContent = stats.avgRating || '0.0';
+                    document.getElementById('activeToday').textContent = stats.activeToday || 0;
+                    
+                    // Update trend indicators
+                    updateTrendIndicator('usersTrend', stats.usersTrend);
+                    updateTrendIndicator('feedbackTrend', stats.feedbackTrend);
+                    updateTrendIndicator('ratingTrend', stats.ratingTrend);
+                    updateTrendIndicator('activeTrend', stats.activeTrend);
+                    
+                } else {
+                    console.error('Failed to load dashboard stats');
+                }
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+
+        // Update trend indicators
+        function updateTrendIndicator(elementId, trend) {
+            const element = document.getElementById(elementId);
+            if (element && trend) {
+                element.innerHTML = `
+                    <i class="fas fa-arrow-${trend.direction === 'up' ? 'up' : 'down'}"></i>
+                    ${trend.percentage}% vs last month
+                `;
+                element.className = `stat-trend ${trend.direction === 'down' ? 'negative' : ''}`;
+            }
+        }
+
+        // Load users data from database
+        async function loadUsersData() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    allUsers = result.data || [];
+                    filteredUsers = [...allUsers];
+                    displayUsers(allUsers);
+                    updateUserStats(allUsers);
+                } else {
+                    console.error('Failed to load users data');
+                    displayUsers([]);
+                    updateUserStats([]);
+                }
+            } catch (error) {
+                console.error('Error loading users data:', error);
+                displayUsers([]);
+                updateUserStats([]);
+            }
+        }
+
+        // Display users in table
+        function displayUsers(users) {
+            const tbody = document.querySelector('.users-table tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No users found</td></tr>';
+                return;
+            }
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="user-checkbox" data-user-id="${user.id}">
+                    </td>
+                    <td>
+                        <div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>
+                    </td>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-name">${user.username}</div>
+                            <div class="user-email">${user.email || `${user.username}@example.com`}</div>
+                        </div>
+                    </td>
+                    <td><span class="role-badge role-${user.role}">${user.role}</span></td>
+                    <td><span class="status-badge status-${user.is_active ? 'active' : 'inactive'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
+                    <td>${new Date(user.created_at || Date.now()).toLocaleDateString()}</td>
+                    <td>${user.total_feedback_sessions || 0}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view-btn" onclick="viewUser(${user.id})" title="View">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn edit-btn" onclick="editUser(${user.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn delete-btn" onclick="deleteUser(${user.id})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update user statistics
+        function updateUserStats(users) {
+            const totalUsers = users.length;
+            const activeUsers = users.filter(u => u.is_active).length;
+            const students = users.filter(u => u.role === 'student').length;
+            const admins = users.filter(u => u.role === 'admin').length;
+
+            // Update stat cards if they exist
+            const totalUsersEl = document.querySelector('[data-stat="total-users"]');
+            const activeUsersEl = document.querySelector('[data-stat="active-users"]');
+            const studentsEl = document.querySelector('[data-stat="students"]');
+            const adminsEl = document.querySelector('[data-stat="admins"]');
+
+            if (totalUsersEl) totalUsersEl.textContent = totalUsers;
+            if (activeUsersEl) activeUsersEl.textContent = activeUsers;
+            if (studentsEl) studentsEl.textContent = students;
+            if (adminsEl) adminsEl.textContent = admins;
+        }
+
+        // User CRUD operations
+        async function editUser(userId) {
+            try {
+                const user = allUsers.find(u => u.id === userId);
+                if (!user) return;
+
+                // Show edit modal with user data
+                const modal = document.getElementById('userModal');
+                const form = document.getElementById('userForm');
+                
+                if (modal && form) {
+                    // Populate form with user data
+                    form.querySelector('#userName').value = user.username;
+                    form.querySelector('#userEmail').value = user.email;
+                    form.querySelector('#userRole').value = user.role;
+                    form.querySelector('#userStatus').checked = user.is_active;
+                    
+                    // Set form to edit mode
+                    form.dataset.mode = 'edit';
+                    form.dataset.userId = userId;
+                    
+                    modal.style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Error editing user:', error);
+                alert('Error loading user data');
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    alert('User deleted successfully');
+                    loadUsersData(); // Reload users
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Failed to delete user');
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Error deleting user');
+            }
+        }
+
+        async function saveUser() {
+            const form = document.getElementById('userForm');
+            if (!form) return;
+
+            const formData = new FormData(form);
+            const userData = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                role: formData.get('role'),
+                is_active: formData.get('status') === 'on'
+            };
+
+            const isEdit = form.dataset.mode === 'edit';
+            const userId = form.dataset.userId;
+
+            try {
+                const token = localStorage.getItem('token');
+                const url = isEdit ? `/api/admin/users/${userId}` : '/api/admin/users';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                if (!isEdit) {
+                    userData.password = formData.get('password');
+                }
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.ok) {
+                    alert(`User ${isEdit ? 'updated' : 'created'} successfully`);
+                    closeUserModal();
+                    loadUsersData(); // Reload users
+                } else {
+                    const error = await response.json();
+                    alert(error.message || `Failed to ${isEdit ? 'update' : 'create'} user`);
+                }
+            } catch (error) {
+                console.error('Error saving user:', error);
+                alert('Error saving user');
+            }
+        }
+
+        // Notification functions
+        async function sendNotificationNow() {
+            const title = document.querySelector('#notificationCenterInterface input[placeholder="Notification title"]').value;
+            const message = document.querySelector('#notificationCenterInterface textarea').value;
+            const type = document.getElementById('notificationType').value;
+            const priority = document.querySelector('#notificationCenterInterface select:last-of-type').value;
+            
+            if (!title || !message) {
+                alert('Please fill in both title and message fields.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/send-notification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        message: message,
+                        type: type,
+                        priority: priority,
+                        recipients: 'all_students'
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Notification sent successfully!\n\nTitle: ${title}\nType: ${type}\nPriority: ${priority}\n\nSent to ${result.recipientCount || 'all'} users.`);
+                    
+                    // Clear form
+                    document.querySelector('#notificationCenterInterface input[placeholder="Notification title"]').value = '';
+                    document.querySelector('#notificationCenterInterface textarea').value = '';
+                    
+                    // Close interface and return to dashboard
+                    closeFullscreenInterface('notificationCenterInterface');
+                } else {
+                    throw new Error('Failed to send notification');
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+                alert('Error sending notification. Please try again.');
+            }
+        }
+
+        // Navigation functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionName);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Add active class to clicked nav item
+            const navItem = document.querySelector(`[data-section="${sectionName}"]`);
+            if (navItem) {
+                navItem.classList.add('active');
+            }
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'analytics': 'Analytics & Reports',
+                'users': 'User Management',
+                'feedback': 'Feedback Review',
+                'complaints': 'Complaints Management',
+                'sentiment': 'Emotion Analysis',
+                'settings': 'System Settings'
+            };
+            
+            document.getElementById('pageTitle').textContent = titles[sectionName] || 'Dashboard';
+            
+            // Load section-specific data
+            if (sectionName === 'users') {
+                loadUsersData();
+            } else if (sectionName === 'analytics') {
+                loadAnalyticsData('today');
+            } else if (sectionName === 'feedback') {
+                loadFeedbackReview('today');
+            } else if (sectionName === 'complaints') {
+                loadComplaintsManagement();
+            } else if (sectionName === 'sentiment') {
+                loadEmotionAnalysis('today');
+            }
+        }
+
+        // Close full-screen interface
+        function closeFullscreenInterface(interfaceId) {
+            document.getElementById(interfaceId).style.display = 'none';
+            showSection('dashboard');
+        }
+
+        // Initialize event listeners
+        function initializeEventListeners() {
+            // Navigation items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.section;
+                    if (section) {
+                        showSection(section);
+                    }
+                });
+            });
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login';
+        }
+
+        // Placeholder functions for other sections
+        function loadAnalyticsData(period) {
+            console.log('Loading analytics data for period:', period);
+        }
+
+        function loadFeedbackReview(period) {
+            console.log('Loading feedback review for period:', period);
+        }
+
+        function loadComplaintsManagement() {
+            console.log('Loading complaints management');
+        }
+
+        function loadEmotionAnalysis(period) {
+            console.log('Loading emotion analysis for period:', period);
+        }
+
+        function closeUserModal() {
+            const modal = document.getElementById('userModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function viewUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (user) {
+                alert(`User Details:\nUsername: ${user.username}\nEmail: ${user.email}\nRole: ${user.role}\nStatus: ${user.is_active ? 'Active' : 'Inactive'}`);
+            }
+        }
+
+        // Quick Actions functions
+        function openDataExportInterface() {
+            document.getElementById('dataExportInterface').style.display = 'flex';
+        }
+
+        function openReportGeneratorInterface() {
+            document.getElementById('reportGeneratorInterface').style.display = 'flex';
+        }
+
+        function openNotificationCenterInterface() {
+            document.getElementById('notificationCenterInterface').style.display = 'flex';
+        }
+
+        function openDatabaseManagerInterface() {
+            document.getElementById('databaseManagerInterface').style.display = 'flex';
+        }
+
+        function openBulkOperationsInterface() {
+            document.getElementById('bulkOperationsInterface').style.display = 'flex';
+        }
+
+        function openSystemMonitorInterface() {
+            document.getElementById('systemMonitorInterface').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

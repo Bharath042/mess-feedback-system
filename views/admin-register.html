@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration - Mess Feedback System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .grid-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 520px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            animation: slideInAdmin 0.8s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideInAdmin {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 15px 30px rgba(30, 60, 114, 0.4);
+            position: relative;
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 27px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .register-header h1 {
+            color: #333;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .register-header p {
+            color: #666;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2a5298;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #2a5298;
+            font-size: 1.1rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #2a5298;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 1rem;
+        }
+
+        .register-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .register-btn:hover::before {
+            left: 100%;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(30, 60, 114, 0.4);
+        }
+
+        .register-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .register-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .register-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        .register-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-link {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .login-link a {
+            color: #2a5298;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #1e3c72;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            border-left: 4px solid;
+        }
+
+        .alert.error {
+            background: #fee;
+            color: #c53030;
+            border-left-color: #e53e3e;
+        }
+
+        .alert.success {
+            background: #f0fff4;
+            color: #38a169;
+            border-left-color: #10b981;
+        }
+
+        .alert.warning {
+            background: #fffbeb;
+            color: #d69e2e;
+            border-left-color: #f6ad55;
+        }
+
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .back-link {
+                top: 1rem;
+                left: 1rem;
+                font-size: 0.8rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="grid-pattern"></div>
+    </div>
+
+    <a href="/admin-login" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Login
+    </a>
+
+    <div class="register-container">
+        <div class="register-header">
+            <div class="logo">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h1>Admin Registration</h1>
+            <p>Create administrative access account</p>
+            <div class="security-badge">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Restricted Access</span>
+            </div>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Administrator Username</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user-shield input-icon"></i>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Enter admin username">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-id-card input-icon"></i>
+                    <input type="text" id="fullName" name="fullName" required 
+                           placeholder="Enter your full name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Official Email</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="Enter official email address">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="department">Department/Division</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-building input-icon"></i>
+                    <input type="text" id="department" name="department" required 
+                           placeholder="Enter your department">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="employeeId">Employee ID</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-id-badge input-icon"></i>
+                    <input type="text" id="employeeId" name="employeeId" required 
+                           placeholder="Enter employee ID">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="accessLevel">Access Level</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-key input-icon"></i>
+                    <select id="accessLevel" name="accessLevel" required>
+                        <option value="">Select access level</option>
+                        <option value="admin">Full Administrator</option>
+                        <option value="mess_manager">Mess Manager</option>
+                        <option value="supervisor">Supervisor</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Secure Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-key input-icon"></i>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Create a secure password">
+                    <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-key input-icon"></i>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required 
+                           placeholder="Confirm your password">
+                    <i class="fas fa-eye password-toggle" id="confirmPasswordToggle"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="securityCode">Security Code</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-shield-alt input-icon"></i>
+                    <input type="text" id="securityCode" name="securityCode" required 
+                           placeholder="Enter admin security code">
+                </div>
+            </div>
+
+            <button type="submit" class="register-btn" id="registerBtn">
+                <span class="spinner"></span>
+                <span class="btn-text">Create Admin Account</span>
+            </button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="/admin-login">Sign In</a>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const registerForm = document.getElementById('registerForm');
+        const registerBtn = document.getElementById('registerBtn');
+        const passwordToggle = document.getElementById('passwordToggle');
+        const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const alert = document.getElementById('alert');
+
+        // Password toggle functionality
+        passwordToggle.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            passwordToggle.classList.toggle('fa-eye');
+            passwordToggle.classList.toggle('fa-eye-slash');
+        });
+
+        confirmPasswordToggle.addEventListener('click', () => {
+            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPasswordInput.setAttribute('type', type);
+            confirmPasswordToggle.classList.toggle('fa-eye');
+            confirmPasswordToggle.classList.toggle('fa-eye-slash');
+        });
+
+        // Show alert function
+        function showAlert(message, type = 'error') {
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 6000);
+        }
+
+        // Form validation
+        function validateForm(formData) {
+            const username = formData.get('username');
+            const fullName = formData.get('fullName');
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirmPassword');
+            const securityCode = formData.get('securityCode');
+            const accessLevel = formData.get('accessLevel');
+
+            if (username.length < 5) {
+                showAlert('Admin username must be at least 5 characters long');
+                return false;
+            }
+
+            if (fullName.length < 2) {
+                showAlert('Please enter your full name');
+                return false;
+            }
+
+            if (!email.includes('@')) {
+                showAlert('Please enter a valid email address');
+                return false;
+            }
+
+            if (password.length < 8) {
+                showAlert('Password must be at least 8 characters long');
+                return false;
+            }
+
+            // Strong password validation
+            if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(password)) {
+                showAlert('Password must contain uppercase, lowercase, number, and special character');
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match');
+                return false;
+            }
+
+            if (!accessLevel) {
+                showAlert('Please select an access level');
+                return false;
+            }
+
+            if (securityCode !== 'ADMIN2024') {
+                showAlert('Invalid security code');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Registration form submission
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(registerForm);
+            
+            if (!validateForm(formData)) {
+                return;
+            }
+
+            const registrationData = {
+                username: formData.get('username'),
+                fullName: formData.get('fullName'),
+                email: formData.get('email'),
+                department: formData.get('department'),
+                employeeId: formData.get('employeeId'),
+                accessLevel: formData.get('accessLevel'),
+                password: formData.get('password'),
+                securityCode: formData.get('securityCode')
+            };
+
+            // Show loading state
+            registerBtn.classList.add('loading');
+            registerBtn.querySelector('.btn-text').textContent = 'Creating Account...';
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ...registrationData, role: 'admin' })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert('Admin account created successfully! Redirecting to login...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/admin-login';
+                    }, 2000);
+                } else {
+                    showAlert(result.message || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showAlert('Network error. Please check your connection and try again.');
+            } finally {
+                // Reset loading state
+                registerBtn.classList.remove('loading');
+                registerBtn.querySelector('.btn-text').textContent = 'Create Admin Account';
+            }
+        });
+
+        // Auto-focus on username field
+        document.getElementById('username').focus();
+
+        // Enhanced security measures
+        let inactivityTimer;
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                showAlert('Session will expire in 2 minutes due to inactivity.', 'warning');
+            }, 18 * 60 * 1000); // 18 minutes
+        }
+
+        // Track user activity
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+            document.addEventListener(event, resetInactivityTimer, true);
+        });
+
+        resetInactivityTimer();
+
+        // Clear sensitive data on page unload
+        window.addEventListener('beforeunload', () => {
+            passwordInput.value = '';
+            confirmPasswordInput.value = '';
+            document.getElementById('securityCode').value = '';
+        });
+
+        // Form validation enhancements
+        const inputs = document.querySelectorAll('input[required], select[required]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', validateInput);
+            input.addEventListener('input', clearValidation);
+        });
+
+        function validateInput(e) {
+            const input = e.target;
+            const value = input.value.trim();
+
+            if (!value) {
+                input.style.borderColor = '#e53e3e';
+                return false;
+            }
+
+            if (input.name === 'username' && value.length < 5) {
+                input.style.borderColor = '#e53e3e';
+                return false;
+            }
+
+            if (input.name === 'password' && value.length < 8) {
+                input.style.borderColor = '#e53e3e';
+                return false;
+            }
+
+            input.style.borderColor = '#10b981';
+            return true;
+        }
+
+        function clearValidation(e) {
+            e.target.style.borderColor = '#e1e5e9';
+        }
+
+        // Prevent right-click context menu for security
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

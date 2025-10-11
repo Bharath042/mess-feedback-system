@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Mess Feedback System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem 0;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo-section {
+            text-align: center;
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .user-info {
+            text-align: center;
+            padding: 1rem 2rem;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .credit-points {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            border-right: 3px solid #667eea;
+        }
+
+        .nav-item i {
+            margin-right: 1rem;
+            width: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .rating-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-item {
+            text-align: center;
+        }
+
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 0.2rem;
+            margin-top: 0.5rem;
+        }
+
+        .star {
+            font-size: 1.5rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #ffd700;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.success {
+            background: #f0fff4;
+            color: #38a169;
+            border: 1px solid #c6f6d5;
+        }
+
+        .alert.error {
+            background: #fee;
+            color: #c53030;
+            border: 1px solid #fed7d7;
+        }
+
+        .section-title {
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .daily-note {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 400;
+            margin-left: 0.5rem;
+        }
+
+        .menu-items-container {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .menu-item-card {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item-card:hover {
+            background: rgba(102, 126, 234, 0.08);
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+
+        .menu-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .menu-item-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .menu-item-type {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .menu-item-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .menu-item-rating {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-item-rating label {
+            font-weight: 500;
+            color: #333;
+            min-width: 100px;
+        }
+
+        .menu-item-rating .star-rating {
+            flex: 1;
+        }
+
+        .item-comment {
+            margin-top: 0.8rem;
+        }
+
+        .item-comment input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .item-comment input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.3rem;
+            color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .mobile-menu-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                width: 260px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+                margin-top: 3rem;
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .rating-group {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+
+            .form-group input, 
+            .form-group select, 
+            .form-group textarea {
+                padding: 0.8rem;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+            }
+
+            .star-rating .star {
+                font-size: 1.8rem;
+                padding: 0.2rem;
+            }
+
+            .user-info {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .user-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+
+            .nav-item {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .credit-points {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.5rem;
+            }
+
+            .header {
+                padding: 0.8rem;
+                border-radius: 10px;
+            }
+
+            .header h2 {
+                font-size: 1.3rem;
+            }
+
+            .form-card {
+                padding: 1rem;
+                border-radius: 10px;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            .rating-group {
+                gap: 1rem;
+            }
+
+            .star-rating .star {
+                font-size: 1.5rem;
+            }
+
+            .sidebar {
+                width: 240px;
+            }
+
+            .logout-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3>Mess Feedback</h3>
+            </div>
+
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h4 id="userName">Student Name</h4>
+                <p id="userRole">Student</p>
+                <div class="credit-points">
+                    <i class="fas fa-coins"></i>
+                    <span id="creditPoints">0</span> Credits
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item" data-section="profile">
+                    <i class="fas fa-user-circle"></i>
+                    My Profile
+                </a>
+                <a href="#" class="nav-item" data-section="feedback">
+                    <i class="fas fa-star"></i>
+                    Give Feedback
+                </a>
+                <a href="#" class="nav-item" data-section="complaints">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Lodge Complaint
+                </a>
+                <a href="#" class="nav-item" data-section="history">
+                    <i class="fas fa-history"></i>
+                    My History
+                </a>
+                <a href="#" class="nav-item" data-section="notifications">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                    <span class="badge" id="notificationBadge">0</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div>
+                    <h2 id="pageTitle">Dashboard</h2>
+                    <p id="pageSubtitle">Welcome to your mess feedback portal</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+
+            <div id="alert" class="alert"></div>
+
+            <!-- Dashboard Section -->
+            <div class="content-section active" id="dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3 id="totalFeedback">0</h3>
+                        <p>Total Feedback Given</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <h3 id="totalCredits">0</h3>
+                        <p>Credit Points Earned</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 id="totalComplaints">0</h3>
+                        <p>Complaints Lodged</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h3 id="userRank">-</h3>
+                        <p>Feedback Rank</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="content-section" id="profile">
+                <div class="form-card">
+                    <h3>My Profile</h3>
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="department">Department</label>
+                            <input type="text" id="department" name="department" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Year of Study</label>
+                            <select id="year" name="year" required>
+                                <option value="">Select Year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                                <option value="5">5th Year</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Feedback Section -->
+            <div class="content-section" id="feedback">
+                <div class="form-card">
+                    <h3>
+                        <i class="fas fa-star"></i>
+                        Give Feedback
+                    </h3>
+                    <form id="feedbackForm">
+                        <div class="form-group">
+                            <label for="messHall">Mess Hall</label>
+                            <select id="messHall" name="messHall" required>
+                                <option value="">Select Mess Hall</option>
+                                <option value="main">Main Mess Hall</option>
+                                <option value="north">North Campus Mess</option>
+                                <option value="hostel">Hostel Mess A</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="mealType">Meal Type</label>
+                            <select id="mealType" name="mealType" required onchange="loadMenuItems()">
+                                <option value="">Select Meal</option>
+                                <option value="breakfast">Breakfast</option>
+                                <option value="lunch">Lunch</option>
+                                <option value="dinner">Dinner</option>
+                                <option value="snacks">Snacks</option>
+                            </select>
+                        </div>
+
+                        <!-- Menu Items Section -->
+                        <div id="menuItemsSection" style="display: none;">
+                            <h4 class="section-title">
+                                <i class="fas fa-utensils"></i>
+                                Rate Menu Items
+                            </h4>
+                            <div id="menuItemsList" class="menu-items-container">
+                                <!-- Menu items will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Common Daily Ratings -->
+                        <div id="commonRatingsSection" style="display: none;">
+                            <h4 class="section-title">
+                                <i class="fas fa-clipboard-check"></i>
+                                Daily Service Rating
+                                <span class="daily-note">(Rate once per day)</span>
+                            </h4>
+                            <div class="rating-group">
+                                <div class="rating-item">
+                                    <label>Service Quality</label>
+                                    <div class="star-rating" data-rating="service">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
+                                    </div>
+                                </div>
+                                <div class="rating-item">
+                                    <label>Cleanliness</label>
+                                    <div class="star-rating" data-rating="cleanliness">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
+                                    </div>
+                                </div>
+                                <div class="rating-item">
+                                    <label>Ambience</label>
+                                    <div class="star-rating" data-rating="ambience">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="overallCommentsSection" style="display: none;">
+                            <label for="overallComments">Overall Comments & Suggestions</label>
+                            <textarea id="overallComments" name="overallComments" rows="3" placeholder="Share your overall experience and suggestions..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="submitFeedbackBtn" style="display: none;">
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Feedback
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Complaints Section -->
+            <div class="content-section" id="complaints">
+                <div class="form-card">
+                    <h3>Lodge Complaint</h3>
+                    <form id="complaintForm">
+                        <div class="form-group">
+                            <label for="complaintType">Complaint Type</label>
+                            <select id="complaintType" name="complaintType" required>
+                                <option value="">Select Type</option>
+                                <option value="ambience">Ambience</option>
+                                <option value="service">Service</option>
+                                <option value="food_quality">Food Quality</option>
+                                <option value="hygiene">Hygiene</option>
+                                <option value="staff_behavior">Staff Behavior</option>
+                                <option value="facility">Facility</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="complaintTitle">Title</label>
+                            <input type="text" id="complaintTitle" name="title" required placeholder="Brief description of the issue">
+                        </div>
+                        <div class="form-group">
+                            <label for="complaintDescription">Description</label>
+                            <textarea id="complaintDescription" name="description" rows="5" required placeholder="Detailed description of your complaint..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="severity">Severity</label>
+                            <select id="severity" name="severity" required>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="content-section" id="history">
+                <div class="form-card">
+                    <h3>My Feedback History</h3>
+                    <div id="historyList">
+                        <!-- History items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Section -->
+            <div class="content-section" id="notifications">
+                <div class="form-card">
+                    <h3>Notifications</h3>
+                    <div id="notificationsList">
+                        <!-- Notifications will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Global variables
+        let currentUser = null;
+        let ratings = {};
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            setupEventListeners();
+            loadDashboardData();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('show');
+                mobileMenuBtn.classList.toggle('active');
+                
+                // Change icon
+                const icon = mobileMenuBtn.querySelector('i');
+                if (sidebar.classList.contains('open')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('show');
+                mobileMenuBtn.classList.remove('active');
+                mobileMenuBtn.querySelector('i').className = 'fas fa-bars';
+            });
+
+            // Close sidebar when nav item is clicked on mobile
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('open');
+                        sidebarOverlay.classList.remove('show');
+                    }
+                });
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.section;
+                    showSection(section);
+                    
+                    // Update active nav item
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Star ratings
+            document.querySelectorAll('.star-rating').forEach(ratingGroup => {
+                const stars = ratingGroup.querySelectorAll('.star');
+                const ratingName = ratingGroup.dataset.rating;
+                
+                stars.forEach((star, index) => {
+                    star.addEventListener('click', function() {
+                        const value = parseInt(this.dataset.value);
+                        ratings[ratingName] = value;
+                        
+                        // Update star display
+                        stars.forEach((s, i) => {
+                            s.classList.toggle('active', i < value);
+                        });
+                    });
+                });
+            });
+
+            // Form submissions
+            document.getElementById('feedbackForm').addEventListener('submit', submitFeedback);
+            document.getElementById('complaintForm').addEventListener('submit', submitComplaint);
+            document.getElementById('profileForm').addEventListener('submit', updateProfile);
+        }
+
+        // Show section
+        function showSection(sectionName) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Update page title
+            const titles = {
+                dashboard: 'Dashboard',
+                profile: 'My Profile',
+                feedback: 'Give Feedback',
+                complaints: 'Lodge Complaint',
+                history: 'My History',
+                notifications: 'Notifications'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionName];
+        }
+
+        // Load user data
+        function loadUserData() {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                document.getElementById('userName').textContent = currentUser.username;
+                document.getElementById('userAvatar').innerHTML = currentUser.username.charAt(0).toUpperCase();
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load stats, history, etc.
+                // This would connect to your API endpoints
+                console.log('Loading dashboard data...');
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load menu items based on meal type
+        function loadMenuItems() {
+            const mealType = document.getElementById('mealType').value;
+            const menuItemsSection = document.getElementById('menuItemsSection');
+            const commonRatingsSection = document.getElementById('commonRatingsSection');
+            const overallCommentsSection = document.getElementById('overallCommentsSection');
+            const submitBtn = document.getElementById('submitFeedbackBtn');
+
+            if (!mealType) {
+                menuItemsSection.style.display = 'none';
+                commonRatingsSection.style.display = 'none';
+                overallCommentsSection.style.display = 'none';
+                submitBtn.style.display = 'none';
+                return;
+            }
+
+            // Sample menu items for different meal types
+            const menuItems = {
+                breakfast: [
+                    { id: 1, name: 'Idli Sambar', type: 'Main Course', description: 'Steamed rice cakes with lentil curry and coconut chutney' },
+                    { id: 2, name: 'Poha', type: 'Main Course', description: 'Flattened rice with vegetables and spices' },
+                    { id: 3, name: 'Tea/Coffee', type: 'Beverage', description: 'Hot tea or coffee with milk and sugar' },
+                    { id: 4, name: 'Bread Butter', type: 'Side Dish', description: 'Fresh bread slices with butter and jam' }
+                ],
+                lunch: [
+                    { id: 5, name: 'Rice', type: 'Main Course', description: 'Steamed basmati rice' },
+                    { id: 6, name: 'Dal Tadka', type: 'Main Course', description: 'Yellow lentils with tempering' },
+                    { id: 7, name: 'Chicken Curry', type: 'Main Course', description: 'Spicy chicken curry with onions and tomatoes' },
+                    { id: 8, name: 'Mixed Vegetables', type: 'Side Dish', description: 'Seasonal vegetables curry' },
+                    { id: 9, name: 'Roti/Chapati', type: 'Main Course', description: 'Fresh wheat flatbread' },
+                    { id: 10, name: 'Raita', type: 'Side Dish', description: 'Yogurt with cucumber and spices' }
+                ],
+                dinner: [
+                    { id: 11, name: 'Rice', type: 'Main Course', description: 'Steamed basmati rice' },
+                    { id: 12, name: 'Dal Makhani', type: 'Main Course', description: 'Creamy black lentils with butter' },
+                    { id: 13, name: 'Paneer Butter Masala', type: 'Main Course', description: 'Cottage cheese in rich tomato gravy' },
+                    { id: 14, name: 'Roti/Naan', type: 'Main Course', description: 'Fresh bread with butter' },
+                    { id: 15, name: 'Salad', type: 'Side Dish', description: 'Fresh cucumber, tomato and onion salad' }
+                ],
+                snacks: [
+                    { id: 16, name: 'Samosa', type: 'Snack', description: 'Crispy pastry with spiced potato filling' },
+                    { id: 17, name: 'Tea/Coffee', type: 'Beverage', description: 'Hot tea or coffee' },
+                    { id: 18, name: 'Biscuits', type: 'Snack', description: 'Assorted biscuits and cookies' }
+                ]
+            };
+
+            const items = menuItems[mealType] || [];
+            const menuItemsList = document.getElementById('menuItemsList');
+            
+            menuItemsList.innerHTML = '';
+            
+            items.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'menu-item-card';
+                itemCard.innerHTML = `
+                    <div class="menu-item-header">
+                        <span class="menu-item-name">${item.name}</span>
+                        <span class="menu-item-type">${item.type}</span>
+                    </div>
+                    <div class="menu-item-description">${item.description}</div>
+                    <div class="menu-item-rating">
+                        <label>Rate this item:</label>
+                        <div class="star-rating" data-rating="item-${item.id}">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+                    <div class="item-comment">
+                        <input type="text" placeholder="Comment about this item (optional)" 
+                               id="comment-${item.id}" name="comment-${item.id}">
+                    </div>
+                `;
+                menuItemsList.appendChild(itemCard);
+            });
+
+            // Show all sections
+            menuItemsSection.style.display = 'block';
+            commonRatingsSection.style.display = 'block';
+            overallCommentsSection.style.display = 'block';
+            submitBtn.style.display = 'block';
+
+            // Re-initialize star ratings for new items
+            initializeStarRatings();
+        }
+
+        // Submit feedback
+        async function submitFeedback(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const mealType = formData.get('mealType');
+            
+            // Collect individual item ratings
+            const itemRatings = {};
+            const itemComments = {};
+            
+            document.querySelectorAll('[data-rating^="item-"]').forEach(ratingEl => {
+                const itemId = ratingEl.dataset.rating.replace('item-', '');
+                const rating = ratings[ratingEl.dataset.rating] || 0;
+                if (rating > 0) {
+                    itemRatings[itemId] = rating;
+                }
+                
+                const commentEl = document.getElementById(`comment-${itemId}`);
+                if (commentEl && commentEl.value.trim()) {
+                    itemComments[itemId] = commentEl.value.trim();
+                }
+            });
+
+            const feedbackData = {
+                messHall: formData.get('messHall'),
+                mealType: mealType,
+                itemRatings: itemRatings,
+                itemComments: itemComments,
+                commonRatings: {
+                    service: ratings.service || 0,
+                    cleanliness: ratings.cleanliness || 0,
+                    ambience: ratings.ambience || 0
+                },
+                overallComments: formData.get('overallComments') || ''
+            };
+
+            try {
+                const response = await fetch('/api/feedback/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(feedbackData)
+                });
+
+                if (response.ok) {
+                    showAlert('Feedback submitted successfully! +10 credits earned.', 'success');
+                    e.target.reset();
+                    resetStarRatings();
+                    // Hide sections
+                    document.getElementById('menuItemsSection').style.display = 'none';
+                    document.getElementById('commonRatingsSection').style.display = 'none';
+                    document.getElementById('overallCommentsSection').style.display = 'none';
+                    document.getElementById('submitFeedbackBtn').style.display = 'none';
+                } else {
+                    showAlert('Failed to submit feedback. Please try again.', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Submit complaint
+        async function submitComplaint(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const complaintData = {
+                type: formData.get('complaintType'),
+                title: formData.get('title'),
+                description: formData.get('description'),
+                severity: formData.get('severity')
+            };
+
+            try {
+                const response = await fetch('/api/complaints/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(complaintData)
+                });
+
+                if (response.ok) {
+                    showAlert('Complaint submitted successfully!', 'success');
+                    e.target.reset();
+                } else {
+                    showAlert('Failed to submit complaint. Please try again.', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Update profile
+        async function updateProfile(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const profileData = {
+                fullName: formData.get('fullName'),
+                email: formData.get('email'),
+                department: formData.get('department'),
+                year: formData.get('year')
+            };
+
+            try {
+                const response = await fetch('/api/profile/update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(profileData)
+                });
+
+                if (response.ok) {
+                    showAlert('Profile updated successfully!', 'success');
+                } else {
+                    showAlert('Failed to update profile. Please try again.', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/student-login';
+        }
+
+        // Socket.IO events
+        socket.on('connect', () => {
+            console.log('Connected to real-time server');
+            if (currentUser) {
+                socket.emit('join-student', currentUser);
+            }
+        });
+
+        socket.on('notification', (data) => {
+            // Handle real-time notifications
+            console.log('New notification:', data);
+        });
+    </script>
+</body>
+</html>
