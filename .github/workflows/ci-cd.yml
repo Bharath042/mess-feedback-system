@@ -60,46 +60,27 @@ jobs:
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-  deploy-infrastructure:
+  update-container:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.13.3
-    
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
-    - name: Terraform Init
-      working-directory: ./terraform
-      run: terraform init
-    
-    - name: Terraform Plan
-      working-directory: ./terraform
+    - name: Update Container Instance
       run: |
-        terraform plan \
-          -var="container_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
-          -out=tfplan
-    
-    - name: Terraform Apply
-      working-directory: ./terraform
-      run: terraform apply -auto-approve tfplan
-    
-    - name: Get Terraform Outputs
-      working-directory: ./terraform
-      run: terraform output
+        echo "Updating container instance with new image..."
+        az container restart --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CONTAINER_GROUP }}
+        
+        echo "Container instance restarted successfully!"
+        echo "New image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
 
   health-check:
-    needs: deploy-infrastructure
+    needs: update-container
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     
