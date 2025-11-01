@@ -162,12 +162,13 @@ app.get('/health', (req, res) => {
 // Version endpoint for CI/CD testing
 app.get('/version', (req, res) => {
   res.json({
-    version: '1.3.0',
+    version: '1.4.0',
     buildDate: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    cicd: 'GitHub Actions CI/CD - LIVE TEST!',
+    cicd: 'GitHub Actions CI/CD - Fully Automated!',
     lastUpdated: new Date().toISOString(),
-    message: 'CI/CD Pipeline Working Perfectly! 🚀'
+    message: 'Everything is Automatic! Just Push and Relax! 🎉',
+    automation: 'Docker + ACR + ACI + GitHub Actions'
   });
 });
 
