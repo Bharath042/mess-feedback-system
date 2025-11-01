@@ -105,13 +105,13 @@ jobs:
             DB_USER=sqladmin \
             DB_PORT=1433 \
             JWT_EXPIRES_IN=24h \
-            AZURE_OPENAI_ENDPOINT="$OPENAI_ENDPOINT" \
-            AZURE_OPENAI_DEPLOYMENT_NAME="$OPENAI_DEPLOYMENT" \
-            AZURE_OPENAI_API_VERSION="$OPENAI_VERSION" \
+            AZURE_OPENAI_ENDPOINT=$OPENAI_ENDPOINT \
+            AZURE_OPENAI_DEPLOYMENT_NAME=$OPENAI_DEPLOYMENT \
+            AZURE_OPENAI_API_VERSION=$OPENAI_VERSION \
           --secure-environment-variables \
-            DB_PASSWORD="$DB_PASS" \
-            JWT_SECRET="$JWT_SEC" \
-            AZURE_OPENAI_API_KEY="$OPENAI_KEY"
+            DB_PASSWORD=$DB_PASS \
+            JWT_SECRET=$JWT_SEC \
+            AZURE_OPENAI_API_KEY=$OPENAI_KEY
         
         echo "Container created successfully with AI chatbot enabled!"
         echo "New image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
