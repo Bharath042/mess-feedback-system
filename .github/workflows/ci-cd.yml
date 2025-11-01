@@ -72,6 +72,13 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
     - name: Update Container Instance with Azure OpenAI Credentials
+      env:
+        OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+        OPENAI_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
+        OPENAI_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION }}
+        DB_PASS: ${{ secrets.DB_PASSWORD }}
+        JWT_SEC: ${{ secrets.JWT_SECRET }}
       run: |
         echo "Deleting old container..."
         az container delete --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CONTAINER_GROUP }} --yes || true
@@ -90,8 +97,21 @@ jobs:
           --memory 1.5 \
           --os-type Linux \
           --restart-policy Always \
-          --environment-variables NODE_ENV=production PORT=3000 DB_SERVER=messfeedbacksqlserver.database.windows.net DB_DATABASE=messfeedbacksqlserver DB_USER=sqladmin DB_PORT=1433 JWT_EXPIRES_IN=24h AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }} AZURE_OPENAI_DEPLOYMENT_NAME=${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }} AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION }} \
-          --secure-environment-variables DB_PASSWORD=${{ secrets.DB_PASSWORD }} JWT_SECRET=${{ secrets.JWT_SECRET }} AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}
+          --environment-variables \
+            NODE_ENV=production \
+            PORT=3000 \
+            DB_SERVER=messfeedbacksqlserver.database.windows.net \
+            DB_DATABASE=messfeedbacksqlserver \
+            DB_USER=sqladmin \
+            DB_PORT=1433 \
+            JWT_EXPIRES_IN=24h \
+            AZURE_OPENAI_ENDPOINT="$OPENAI_ENDPOINT" \
+            AZURE_OPENAI_DEPLOYMENT_NAME="$OPENAI_DEPLOYMENT" \
+            AZURE_OPENAI_API_VERSION="$OPENAI_VERSION" \
+          --secure-environment-variables \
+            DB_PASSWORD="$DB_PASS" \
+            JWT_SECRET="$JWT_SEC" \
+            AZURE_OPENAI_API_KEY="$OPENAI_KEY"
         
         echo "Container created successfully with AI chatbot enabled!"
         echo "New image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
