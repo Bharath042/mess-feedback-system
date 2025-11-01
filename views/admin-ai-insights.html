@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Insights - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1><i class="fas fa-robot"></i> AI-Powered Insights</h1>
+            <p class="text-muted">Generate intelligent insights from feedback data using Azure OpenAI</p>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label>Start Date</label>
+                    <input type="date" id="startDate" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label>End Date</label>
+                    <input type="date" id="endDate" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label>Meal Type</label>
+                    <select id="mealType" class="form-control">
+                        <option value="">All Meals</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snacks">Snacks</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateInsights()">
+                <i class="fas fa-magic"></i> Generate AI Insights
+            </button>
+            <button class="btn btn-secondary" onclick="generateMenuSuggestions()">
+                <i class="fas fa-utensils"></i> Get Menu Suggestions
+            </button>
+        </div>
+
+        <div id="insightsContainer"></div>
+        <div id="suggestionsContainer"></div>
+    </div>
+
+    <script>
+        async function generateInsights() {
+            const container = document.getElementById('insightsContainer');
+            container.innerHTML = '<div class="card loading"><i class="fas fa-spinner fa-spin fa-3x"></i><p>AI is analyzing feedback data...</p></div>';
+
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const mealType = document.getElementById('mealType').value;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/ai/insights', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ startDate, endDate, mealType })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayInsights(data.insights, data.dataPoints);
+                } else {
+                    container.innerHTML = `<div class="card"><div class="alert alert-danger">${data.message}</div></div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="card"><div class="alert alert-danger">Error: ${error.message}</div></div>`;
+            }
+        }
+
+        function displayInsights(insights, dataPoints) {
+            const container = document.getElementById('insightsContainer');
+            
+            let html = `
+                <div class="card">
+                    <h2><i class="fas fa-lightbulb"></i> AI Insights</h2>
+                    <p class="text-muted">Based on ${dataPoints} feedback submissions</p>
+                    
+                    <div class="insight-card">
+                        <h4><i class="fas fa-chart-line"></i> Summary</h4>
+                        <p>${insights.summary || 'No summary available'}</p>
+                    </div>
+            `;
+
+            if (insights.concerns && insights.concerns.length > 0) {
+                html += `
+                    <div class="insight-card">
+                        <h4><i class="fas fa-exclamation-triangle text-warning"></i> Areas of Concern</h4>
+                        <ul>
+                            ${insights.concerns.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (insights.highlights && insights.highlights.length > 0) {
+                html += `
+                    <div class="insight-card">
+                        <h4><i class="fas fa-star text-success"></i> Highlights</h4>
+                        <ul>
+                            ${insights.highlights.map(h => `<li>${h}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (insights.recommendations && insights.recommendations.length > 0) {
+                html += `
+                    <div class="insight-card">
+                        <h4><i class="fas fa-tasks text-primary"></i> Recommendations</h4>
+                        <ul>
+                            ${insights.recommendations.map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function generateMenuSuggestions() {
+            const container = document.getElementById('suggestionsContainer');
+            container.innerHTML = '<div class="card loading"><i class="fas fa-spinner fa-spin fa-3x"></i><p>AI is generating menu suggestions...</p></div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/ai/menu-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ days: 7 })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayMenuSuggestions(data.suggestions, data.basedOnFeedback);
+                } else {
+                    container.innerHTML = `<div class="card"><div class="alert alert-danger">${data.message}</div></div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="card"><div class="alert alert-danger">Error: ${error.message}</div></div>`;
+            }
+        }
+
+        function displayMenuSuggestions(suggestions, feedbackCount) {
+            const container = document.getElementById('suggestionsContainer');
+            
+            let html = `
+                <div class="card">
+                    <h2><i class="fas fa-utensils"></i> Menu Suggestions</h2>
+                    <p class="text-muted">Based on ${feedbackCount} recent feedback submissions</p>
+            `;
+
+            if (suggestions.improvements && suggestions.improvements.length > 0) {
+                html += `
+                    <div class="insight-card">
+                        <h4><i class="fas fa-wrench"></i> Improvements</h4>
+                        <ul>
+                            ${suggestions.improvements.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (suggestions.newItems && suggestions.newItems.length > 0) {
+                html += `
+                    <div class="insight-card">
+                        <h4><i class="fas fa-plus-circle text-success"></i> Suggested New Items</h4>
+                        <ul>
+                            ${suggestions.newItems.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (suggestions.removeItems && suggestions.removeItems.length > 0) {
+                html += `
+                    <div class="insight-card">
+                        <h4><i class="fas fa-minus-circle text-danger"></i> Consider Removing</h4>
+                        <ul>
+                            ${suggestions.removeItems.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Set default dates (last 7 days)
+        const today = new Date();
+        const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        document.getElementById('endDate').valueAsDate = today;
+        document.getElementById('startDate').valueAsDate = lastWeek;
+    </script>
+</body>
+</html>

@@ -7589,6 +7589,77 @@
                     </div>
                 </div>
             </div>
+
+            <!-- AI Insights Section -->
+            <div class="content-section" id="ai-insights">
+                <div class="section-header">
+                    <h2><i class="fas fa-robot me-2"></i>AI Admin Assistant</h2>
+                    <p>Get real-time insights and analytics powered by AI</p>
+                </div>
+
+                <!-- Admin AI Chat Interface -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <h3><i class="fas fa-robot me-2"></i>AI Assistant Chat</h3>
+                                <p class="mb-0">Ask about feedback trends, complaints, user statistics, and more</p>
+                            </div>
+                            <div class="card-body" style="height: 500px; overflow-y: auto; background: #f8f9fa;" id="adminAIChatMessages">
+                                <div style="text-align: center; padding: 40px; color: #666;">
+                                    <i class="fas fa-robot fa-4x mb-3" style="color: #667eea;"></i>
+                                    <h4>Welcome, Admin!</h4>
+                                    <p>Ask me anything about:</p>
+                                    <ul style="list-style: none; padding: 0;">
+                                        <li>📊 Feedback statistics and trends</li>
+                                        <li>⚠️ Recent complaints and issues</li>
+                                        <li>👥 User activity and engagement</li>
+                                        <li>🍽️ Menu performance and ratings</li>
+                                        <li>💡 AI-powered recommendations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="input-group">
+                                    <input type="text" id="adminAIChatInput" class="form-control" placeholder="Ask about feedback, complaints, statistics..." onkeypress="if(event.key==='Enter') sendAdminAIMessage()">
+                                    <button class="btn btn-primary" onclick="sendAdminAIMessage()">
+                                        <i class="fas fa-paper-plane"></i> Send
+                                    </button>
+                                </div>
+                                <small id="adminAIChatStatus" style="color: #666;"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Quick AI Actions</h3>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-outline-primary me-2 mb-2" onclick="askAI('Show me feedback statistics for this week')">
+                                    <i class="fas fa-chart-bar me-2"></i>Weekly Stats
+                                </button>
+                                <button class="btn btn-outline-warning me-2 mb-2" onclick="askAI('What are the top complaints this month?')">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Top Complaints
+                                </button>
+                                <button class="btn btn-outline-success me-2 mb-2" onclick="askAI('Which menu items are most popular?')">
+                                    <i class="fas fa-star me-2"></i>Popular Items
+                                </button>
+                                <button class="btn btn-outline-info me-2 mb-2" onclick="askAI('Give me recommendations to improve service')">
+                                    <i class="fas fa-lightbulb me-2"></i>Recommendations
+                                </button>
+                                <button class="btn btn-outline-danger me-2 mb-2" onclick="askAI('What issues need immediate attention?')">
+                                    <i class="fas fa-fire me-2"></i>Urgent Issues
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -7676,8 +7747,14 @@
         function showSection(sectionName) {
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
+                section.style.display = 'none';
             });
-            document.getElementById(sectionName).classList.add('active');
+            
+            const targetSection = document.getElementById(sectionName);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                targetSection.style.display = 'block';
+            }
             
             // Update page title
             const titles = {
@@ -7689,9 +7766,10 @@
                 sentiment: 'Emotion Analysis',
                 notifications: 'Notification Management',
                 powerbi: 'Power BI Reports',
-                settings: 'System Settings'
+                settings: 'System Settings',
+                'ai-insights': 'AI Admin Assistant'
             };
-            document.getElementById('pageTitle').textContent = titles[sectionName];
+            document.getElementById('pageTitle').textContent = titles[sectionName] || 'Dashboard';
             
             // Load section-specific data
             if (sectionName === 'users') {
@@ -12567,11 +12645,285 @@ Activity:
 
         // Initialize dashboard when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            // Show dashboard by default
+            showSection('dashboard');
             loadAdminData();
             initializeEventListeners();
+            initializeAIDates();
         });
 
+        // Admin AI Chat Functions
+        let adminAIConversationHistory = [];
+
+        function initializeAIDates() {
+            // Initialize if needed
+        }
+
+        function addAdminAIMessage(role, content) {
+            const messagesContainer = document.getElementById('adminAIChatMessages');
+            
+            // Clear welcome message on first interaction
+            if (adminAIConversationHistory.length === 0) {
+                messagesContainer.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                margin-bottom: 15px;
+                padding: 12px 16px;
+                border-radius: 12px;
+                max-width: 80%;
+                ${role === 'user' ? 
+                    'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-left: auto; text-align: right;' : 
+                    'background: white; color: #333; border: 1px solid #e0e0e0;'}
+            `;
+            
+            if (role === 'assistant') {
+                messageDiv.innerHTML = `<strong><i class="fas fa-robot me-2"></i>AI Assistant</strong><br>${content}`;
+            } else {
+                messageDiv.innerHTML = `<strong>You</strong><br>${content}`;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function sendAdminAIMessage() {
+            const input = document.getElementById('adminAIChatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const statusDiv = document.getElementById('adminAIChatStatus');
+            
+            // Add user message
+            addAdminAIMessage('user', message);
+            adminAIConversationHistory.push({ role: 'user', content: message });
+            
+            // Clear input
+            input.value = '';
+            
+            // Show loading
+            statusDiv.textContent = 'AI is analyzing data...';
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/ai/admin-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversationHistory: adminAIConversationHistory
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addAdminAIMessage('assistant', data.response);
+                    adminAIConversationHistory.push({ role: 'assistant', content: data.response });
+                    statusDiv.textContent = '';
+                } else {
+                    statusDiv.textContent = data.message || 'Failed to get response';
+                    statusDiv.style.color = '#ff6b6b';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.textContent = 'Error: Could not connect to AI service';
+                statusDiv.style.color = '#ff6b6b';
+            }
+        }
+
+        function askAI(question) {
+            document.getElementById('adminAIChatInput').value = question;
+            sendAdminAIMessage();
+        }
+
+        async function generateAIInsights() {
+            const container = document.getElementById('aiInsightsContainer');
+            container.innerHTML = '<div class="card"><div class="card-body text-center"><i class="fas fa-spinner fa-spin fa-3x mb-3"></i><p>AI is analyzing feedback data...</p></div></div>';
+
+            const startDate = document.getElementById('aiStartDate').value;
+            const endDate = document.getElementById('aiEndDate').value;
+            const mealType = document.getElementById('aiMealType').value;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/ai/insights', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ startDate, endDate, mealType })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayAIInsights(data.insights, data.dataPoints);
+                } else {
+                    container.innerHTML = `<div class="card"><div class="card-body"><div class="alert alert-danger">${data.message}</div></div></div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="card"><div class="card-body"><div class="alert alert-danger">Error: ${error.message}</div></div></div>`;
+            }
+        }
+
+        function displayAIInsights(insights, dataPoints) {
+            const container = document.getElementById('aiInsightsContainer');
+            
+            let html = `
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3><i class="fas fa-lightbulb me-2"></i>AI Insights</h3>
+                        <p class="mb-0">Based on ${dataPoints} feedback submissions</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-chart-line me-2"></i>Summary</h5>
+                            <p class="mb-0">${insights.summary || 'No summary available'}</p>
+                        </div>
+            `;
+
+            if (insights.concerns && insights.concerns.length > 0) {
+                html += `
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Areas of Concern</h5>
+                        <ul class="mb-0">
+                            ${insights.concerns.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (insights.highlights && insights.highlights.length > 0) {
+                html += `
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-star me-2"></i>Highlights</h5>
+                        <ul class="mb-0">
+                            ${insights.highlights.map(h => `<li>${h}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (insights.recommendations && insights.recommendations.length > 0) {
+                html += `
+                    <div class="alert alert-primary">
+                        <h5><i class="fas fa-tasks me-2"></i>Recommendations</h5>
+                        <ul class="mb-0">
+                            ${insights.recommendations.map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
+        async function generateMenuSuggestions() {
+            const container = document.getElementById('aiSuggestionsContainer');
+            container.innerHTML = '<div class="card mt-3"><div class="card-body text-center"><i class="fas fa-spinner fa-spin fa-3x mb-3"></i><p>AI is generating menu suggestions...</p></div></div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/ai/menu-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ days: 7 })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayMenuSuggestions(data.suggestions, data.basedOnFeedback);
+                } else {
+                    container.innerHTML = `<div class="card mt-3"><div class="card-body"><div class="alert alert-danger">${data.message}</div></div></div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="card mt-3"><div class="card-body"><div class="alert alert-danger">Error: ${error.message}</div></div></div>`;
+            }
+        }
+
+        function displayMenuSuggestions(suggestions, feedbackCount) {
+            const container = document.getElementById('aiSuggestionsContainer');
+            
+            let html = `
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3><i class="fas fa-utensils me-2"></i>Menu Suggestions</h3>
+                        <p class="mb-0">Based on ${feedbackCount} recent feedback submissions</p>
+                    </div>
+                    <div class="card-body">
+            `;
+
+            if (suggestions.improvements && suggestions.improvements.length > 0) {
+                html += `
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-wrench me-2"></i>Improvements</h5>
+                        <ul class="mb-0">
+                            ${suggestions.improvements.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (suggestions.newItems && suggestions.newItems.length > 0) {
+                html += `
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-plus-circle me-2"></i>Suggested New Items</h5>
+                        <ul class="mb-0">
+                            ${suggestions.newItems.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (suggestions.removeItems && suggestions.removeItems.length > 0) {
+                html += `
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-minus-circle me-2"></i>Consider Removing</h5>
+                        <ul class="mb-0">
+                            ${suggestions.removeItems.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
     </script>
+    
+    <!-- Floating AI Assistant Button -->
+    <button onclick="showSection('ai-insights')" style="
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        z-index: 1000;
+        transition: all 0.3s ease;
+    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="AI Insights">
+        <i class="fas fa-robot"></i>
+    </button>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
