@@ -71,13 +71,43 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
-    - name: Update Container Instance
+    - name: Update Container Instance with Azure OpenAI Credentials
       run: |
-        echo "Updating container instance with new image..."
-        az container restart --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CONTAINER_GROUP }}
+        echo "Deleting old container..."
+        az container delete --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CONTAINER_GROUP }} --yes
         
-        echo "Container instance restarted successfully!"
-        echo "New image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+        echo "Creating container with new image and AI credentials..."
+        az container create \
+          --resource-group ${{ env.RESOURCE_GROUP }} \
+          --name ${{ env.CONTAINER_GROUP }} \
+          --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+          --registry-login-server ${{ env.REGISTRY }} \
+          --registry-username ${{ secrets.ACR_USERNAME }} \
+          --registry-password ${{ secrets.ACR_PASSWORD }} \
+          --dns-name-label mess-feedback-system-prod \
+          --ports 3000 \
+          --cpu 1 \
+          --memory 1.5 \
+          --os-type Linux \
+          --restart-policy Always \
+          --environment-variables \
+            NODE_ENV=production \
+            PORT=3000 \
+            DB_SERVER=messfeedbacksqlserver.database.windows.net \
+            DB_DATABASE=messfeedbacksqlserver \
+            DB_USER=sqladmin \
+            DB_PORT=1433 \
+            JWT_EXPIRES_IN=24h \
+            AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }} \
+            AZURE_OPENAI_DEPLOYMENT_NAME=${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }} \
+            AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION }} \
+          --secure-environment-variables \
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}
+        
+        echo "Container created successfully with AI chatbot enabled!"
+        echo "New image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
 
   health-check:
     needs: update-container
