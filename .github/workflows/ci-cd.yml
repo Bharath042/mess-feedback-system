@@ -83,6 +83,25 @@ jobs:
       working-directory: ./terraform
       run: terraform init
     
+    - name: Import Existing Resources (if needed)
+      working-directory: ./terraform
+      run: |
+        # Import existing resource group if not in state
+        terraform import -input=false azurerm_resource_group.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi || true
+        
+        # Import existing SQL Server if not in state
+        terraform import -input=false azurerm_mssql_server.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver || true
+        
+        # Import existing SQL Database if not in state
+        terraform import -input=false azurerm_mssql_database.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver/databases/messfeedbacksqlserver || true
+        
+        # Import existing ACR if not in state
+        terraform import -input=false azurerm_container_registry.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.ContainerRegistry/registries/messfeedback || true
+        
+        # Import existing Key Vault if not in state (will fail if doesn't exist, that's ok)
+        terraform import -input=false azurerm_key_vault.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.KeyVault/vaults/messfeedback-kv-728281c6 || true
+      continue-on-error: true
+    
     - name: Terraform Plan
       working-directory: ./terraform
       env:
