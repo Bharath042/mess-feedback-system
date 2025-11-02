@@ -65,6 +65,11 @@ output "application_url" {
   value       = "http://${azurerm_container_group.main.fqdn}:${var.container_port}"
 }
 
+output "container_url" {
+  description = "Container URL (alias for application_url)"
+  value       = "http://${azurerm_container_group.main.fqdn}:${var.container_port}"
+}
+
 output "application_health_url" {
   description = "URL to check application health"
   value       = "http://${azurerm_container_group.main.fqdn}:${var.container_port}/health"
