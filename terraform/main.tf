@@ -140,6 +140,81 @@ resource "azurerm_key_vault_secret" "jwt_secret" {
   depends_on = [azurerm_key_vault.main]
 }
 
+# Create Application Insights for monitoring
+resource "azurerm_application_insights" "main" {
+  name                = "${var.project_name}-appinsights"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  application_type    = "Node.JS"
+  
+  tags = var.tags
+}
+
+# Create Action Group for alerts
+resource "azurerm_monitor_action_group" "main" {
+  name                = "${var.project_name}-action-group"
+  resource_group_name = azurerm_resource_group.main.name
+  short_name          = "messfeed"
+
+  email_receiver {
+    name          = "admin-email"
+    email_address = var.alert_email
+    use_common_alert_schema = true
+  }
+
+  tags = var.tags
+}
+
+# Alert Rule: High CPU Usage
+resource "azurerm_monitor_metric_alert" "cpu_alert" {
+  name                = "${var.project_name}-high-cpu-alert"
+  resource_group_name = azurerm_resource_group.main.name
+  scopes              = [azurerm_container_group.main.id]
+  description         = "Alert when CPU usage exceeds 80%"
+  severity            = 2
+  frequency           = "PT1M"
+  window_size         = "PT5M"
+
+  criteria {
+    metric_namespace = "Microsoft.ContainerInstance/containerGroups"
+    metric_name      = "CpuUsage"
+    aggregation      = "Average"
+    operator         = "GreaterThan"
+    threshold        = 0.8
+  }
+
+  action {
+    action_group_id = azurerm_monitor_action_group.main.id
+  }
+
+  tags = var.tags
+}
+
+# Alert Rule: High Error Rate
+resource "azurerm_monitor_metric_alert" "error_alert" {
+  name                = "${var.project_name}-high-error-alert"
+  resource_group_name = azurerm_resource_group.main.name
+  scopes              = [azurerm_application_insights.main.id]
+  description         = "Alert when error rate exceeds 5%"
+  severity            = 1
+  frequency           = "PT1M"
+  window_size         = "PT5M"
+
+  criteria {
+    metric_namespace = "Microsoft.Insights/components"
+    metric_name      = "exceptions/count"
+    aggregation      = "Count"
+    operator         = "GreaterThan"
+    threshold        = 10
+  }
+
+  action {
+    action_group_id = azurerm_monitor_action_group.main.id
+  }
+
+  tags = var.tags
+}
+
 # Create Container Group (ACI) - This will be NEW or replace existing
 resource "azurerm_container_group" "main" {
   name                = var.container_group_name
@@ -181,6 +256,8 @@ resource "azurerm_container_group" "main" {
       AZURE_OPENAI_ENDPOINT         = var.azure_openai_endpoint
       AZURE_OPENAI_DEPLOYMENT_NAME  = var.azure_openai_deployment_name
       AZURE_OPENAI_API_VERSION      = var.azure_openai_api_version
+      APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.main.connection_string
+      APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.main.instrumentation_key
     }
 
     # Secure environment variables

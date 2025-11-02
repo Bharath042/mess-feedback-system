@@ -109,18 +109,48 @@ output "database_connection_info" {
   sensitive = true
 }
 
+# Application Insights Information
+output "app_insights_name" {
+  description = "Name of Application Insights"
+  value       = azurerm_application_insights.main.name
+}
+
+output "app_insights_instrumentation_key" {
+  description = "Application Insights Instrumentation Key"
+  value       = azurerm_application_insights.main.instrumentation_key
+  sensitive   = true
+}
+
+output "app_insights_connection_string" {
+  description = "Application Insights Connection String"
+  value       = azurerm_application_insights.main.connection_string
+  sensitive   = true
+}
+
+output "app_insights_app_id" {
+  description = "Application Insights Application ID"
+  value       = azurerm_application_insights.main.app_id
+}
+
+# Monitoring Dashboard URL
+output "monitoring_dashboard_url" {
+  description = "URL to view Application Insights dashboard"
+  value       = "https://portal.azure.com/#@/resource${azurerm_application_insights.main.id}/overview"
+}
+
 # Summary Information
 output "deployment_summary" {
   description = "Summary of deployed resources"
   value = {
-    project_name      = var.project_name
-    environment       = var.environment
-    resource_group    = azurerm_resource_group.main.name
-    location          = azurerm_resource_group.main.location
-    sql_server        = azurerm_mssql_server.main.name
+    project_name       = var.project_name
+    environment        = var.environment
+    resource_group     = azurerm_resource_group.main.name
+    location           = azurerm_resource_group.main.location
+    sql_server         = azurerm_mssql_server.main.name
     container_registry = azurerm_container_registry.main.name
-    container_group   = azurerm_container_group.main.name
-    key_vault         = azurerm_key_vault.main.name
-    application_url   = "http://${azurerm_container_group.main.fqdn}:${var.container_port}"
+    container_group    = azurerm_container_group.main.name
+    key_vault          = azurerm_key_vault.main.name
+    app_insights       = azurerm_application_insights.main.name
+    application_url    = "http://${azurerm_container_group.main.fqdn}:${var.container_port}"
   }
 }

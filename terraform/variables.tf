@@ -146,6 +146,14 @@ variable "azure_openai_api_version" {
   sensitive   = false
 }
 
+# Monitoring Configuration
+variable "alert_email" {
+  description = "Email address for monitoring alerts"
+  type        = string
+  default     = "admin@example.com"  # Change this to your email
+  sensitive   = false
+}
+
 # Tags
 variable "tags" {
   description = "Tags to apply to all resources"
