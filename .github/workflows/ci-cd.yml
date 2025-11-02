@@ -104,6 +104,18 @@ jobs:
         # Import ACR
         terraform import -input=false azurerm_container_registry.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.ContainerRegistry/registries/messfeedback 2>/dev/null || echo "ACR already in state"
         
+        # Import Application Insights (if exists)
+        terraform import -input=false azurerm_application_insights.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Insights/components/mess-feedback-system-appinsights 2>/dev/null || echo "App Insights already in state or doesn't exist"
+        
+        # Import Action Group (if exists)
+        terraform import -input=false azurerm_monitor_action_group.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Insights/actionGroups/mess-feedback-system-action-group 2>/dev/null || echo "Action Group already in state or doesn't exist"
+        
+        # Import CPU Alert (if exists)
+        terraform import -input=false azurerm_monitor_metric_alert.cpu_alert /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Insights/metricAlerts/mess-feedback-system-high-cpu-alert 2>/dev/null || echo "CPU Alert already in state or doesn't exist"
+        
+        # Import Error Alert (if exists)
+        terraform import -input=false azurerm_monitor_metric_alert.error_alert /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Insights/metricAlerts/mess-feedback-system-high-error-alert 2>/dev/null || echo "Error Alert already in state or doesn't exist"
+        
         echo "Import complete!"
       continue-on-error: false
     
