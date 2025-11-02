@@ -60,44 +60,49 @@ jobs:
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-  update-container:
+  deploy-with-terraform:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.0
+    
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
-    - name: Update Container Instance with Azure OpenAI Credentials
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init
+    
+    - name: Terraform Plan
+      working-directory: ./terraform
+      env:
+        TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      run: terraform plan -out=tfplan
+    
+    - name: Terraform Apply
+      working-directory: ./terraform
+      env:
+        TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      run: terraform apply -auto-approve tfplan
+      
+    - name: Get Container URL
+      working-directory: ./terraform
       run: |
-        echo "Deleting old container..."
-        az container delete --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CONTAINER_GROUP }} --yes || true
-        
-        echo "Creating container with new image and AI credentials..."
-        az container create \
-          --resource-group ${{ env.RESOURCE_GROUP }} \
-          --name ${{ env.CONTAINER_GROUP }} \
-          --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-          --registry-login-server ${{ env.REGISTRY }} \
-          --registry-username ${{ secrets.ACR_USERNAME }} \
-          --registry-password ${{ secrets.ACR_PASSWORD }} \
-          --dns-name-label mess-feedback-system-prod \
-          --ports 3000 \
-          --cpu 1 \
-          --memory 1.5 \
-          --os-type Linux \
-          --restart-policy Always \
-          --environment-variables NODE_ENV=production PORT=3000 DB_SERVER=messfeedbacksqlserver.database.windows.net DB_DATABASE=messfeedbacksqlserver DB_USER=sqladmin DB_PORT=1433 JWT_EXPIRES_IN=24h AZURE_OPENAI_ENDPOINT='${{ secrets.AZURE_OPENAI_ENDPOINT }}' AZURE_OPENAI_DEPLOYMENT_NAME='${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}' AZURE_OPENAI_API_VERSION='${{ secrets.AZURE_OPENAI_API_VERSION }}' \
-          --secure-environment-variables DB_PASSWORD='${{ secrets.DB_PASSWORD }}' JWT_SECRET='${{ secrets.JWT_SECRET }}' AZURE_OPENAI_API_KEY='${{ secrets.AZURE_OPENAI_API_KEY }}'
-        
-        echo "Container created successfully with AI chatbot enabled!"
-        echo "New image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+        echo "Deployment complete!"
+        terraform output container_url || echo "Container URL: http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000"
 
   health-check:
-    needs: update-container
+    needs: deploy-with-terraform
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     

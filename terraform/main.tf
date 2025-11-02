@@ -146,7 +146,7 @@ resource "azurerm_container_group" "main" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   ip_address_type     = "Public"
-  dns_name_label      = "${var.project_name}-${var.environment}"
+  dns_name_label      = "mess-feedback-system-prod"
   os_type             = "Linux"
   restart_policy      = "Always"
 
@@ -171,19 +171,23 @@ resource "azurerm_container_group" "main" {
 
     # Environment variables for the application
     environment_variables = {
-      NODE_ENV        = var.node_env
-      PORT           = tostring(var.container_port)
-      DB_SERVER      = azurerm_mssql_server.main.fully_qualified_domain_name
-      DB_DATABASE    = azurerm_mssql_database.main.name
-      DB_USER        = var.sql_admin_username
-      DB_PORT        = "1433"
-      JWT_EXPIRES_IN = var.jwt_expires_in
+      NODE_ENV                       = var.node_env
+      PORT                          = tostring(var.container_port)
+      DB_SERVER                     = azurerm_mssql_server.main.fully_qualified_domain_name
+      DB_DATABASE                   = azurerm_mssql_database.main.name
+      DB_USER                       = var.sql_admin_username
+      DB_PORT                       = "1433"
+      JWT_EXPIRES_IN                = var.jwt_expires_in
+      AZURE_OPENAI_ENDPOINT         = var.azure_openai_endpoint
+      AZURE_OPENAI_DEPLOYMENT_NAME  = var.azure_openai_deployment_name
+      AZURE_OPENAI_API_VERSION      = var.azure_openai_api_version
     }
 
     # Secure environment variables
     secure_environment_variables = {
-      DB_PASSWORD = var.sql_admin_password
-      JWT_SECRET  = var.jwt_secret
+      DB_PASSWORD         = var.sql_admin_password
+      JWT_SECRET          = var.jwt_secret
+      AZURE_OPENAI_API_KEY = var.azure_openai_api_key
     }
 
     # Liveness probe

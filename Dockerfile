@@ -19,6 +19,8 @@ RUN npm ci --only=production && \
 COPY server-simple.js ./
 COPY config/ ./config/
 COPY views/ ./views/
+COPY routes/ ./routes/
+COPY services/ ./services/
 COPY *.html ./
 
 # Create necessary directories and set permissions

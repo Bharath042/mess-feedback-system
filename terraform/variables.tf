@@ -70,13 +70,13 @@ variable "acr_sku" {
 variable "container_group_name" {
   description = "Name of the container group"
   type        = string
-  default     = "messfeedback-aci"
+  default     = "messfeedback-terraform"
 }
 
 variable "container_image" {
   description = "Container image to deploy"
   type        = string
-  default     = "messfeedback.azurecr.io/mess-feedback-system:v1.1.0"
+  default     = "messfeedback.azurecr.io/mess-feedback-system:latest"
 }
 
 variable "container_cpu" {
@@ -115,6 +115,35 @@ variable "jwt_expires_in" {
   description = "JWT token expiration time"
   type        = string
   default     = "24h"
+}
+
+# Azure OpenAI Configuration
+variable "azure_openai_endpoint" {
+  description = "Azure OpenAI endpoint URL"
+  type        = string
+  default     = "https://22070-mhgb5tc9-eastus2.cognitiveservices.azure.com/"
+  sensitive   = false
+}
+
+variable "azure_openai_api_key" {
+  description = "Azure OpenAI API key"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "azure_openai_deployment_name" {
+  description = "Azure OpenAI deployment name"
+  type        = string
+  default     = "gpt-35-turbo"
+  sensitive   = false
+}
+
+variable "azure_openai_api_version" {
+  description = "Azure OpenAI API version"
+  type        = string
+  default     = "2024-12-01-preview"
+  sensitive   = false
 }
 
 # Tags
