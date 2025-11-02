@@ -95,32 +95,43 @@ router.get('/embed-info', async (req, res, next) => {
     });
 
   } catch (error) {
-    console.error('Power BI embed info error:', error);
     next(error);
   }
 });
 
 // @desc    Refresh Power BI dataset
-// @route   POST /api/powerbi/refresh-dataset
+// @route   POST /api/powerbi/refresh/:datasetId
 // @access  Private (Admin only)
-router.post('/refresh-dataset', async (req, res, next) => {
+router.post('/refresh/:datasetId', async (req, res, next) => {
   try {
-    const logger = require('../config/logging').setupLogging();
+    const { datasetId } = req.params;
     
-    // Get access token
-    const accessToken = await getAccessToken();
-
-    // Trigger dataset refresh
-    const datasetId = req.body.datasetId || process.env.POWERBI_DATASET_ID;
-    
-    if (!datasetId) {
+    // SECURITY FIX: Validate datasetId format to prevent SSRF
+    // Only allow alphanumeric characters and hyphens (valid UUID/GUID format)
+    const datasetIdRegex = /^[a-zA-Z0-9-]{36}$/;
+    if (!datasetIdRegex.test(datasetId)) {
       return res.status(400).json({
         success: false,
-        message: 'Dataset ID is required'
+        message: 'Invalid dataset ID format'
+      });
+    }
+    
+    // Validate dataset ID exists in our database
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('datasetId', sql.VarChar, datasetId)
+      .query('SELECT COUNT(*) as count FROM PowerBIDatasets WHERE dataset_id = @datasetId');
+
+    if (result.recordset[0].count === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dataset not found'
       });
     }
 
-    const refreshUrl = `https://api.powerbi.com/v1.0/myorg/groups/${POWERBI_CONFIG.workspaceId}/datasets/${datasetId}/refreshes`;
+    // SECURITY FIX: Use URL encoding for user input
+    const encodedDatasetId = encodeURIComponent(datasetId);
+    const refreshUrl = `https://api.powerbi.com/v1.0/myorg/groups/${POWERBI_CONFIG.workspaceId}/datasets/${encodedDatasetId}/refreshes`;
     
     await axios.post(refreshUrl, {
       type: 'full',
@@ -158,11 +169,22 @@ router.get('/refresh-history/:datasetId', async (req, res, next) => {
   try {
     const { datasetId } = req.params;
     
+    // SECURITY FIX: Validate datasetId format to prevent SSRF
+    // Only allow alphanumeric characters and hyphens (valid UUID/GUID format)
+    const datasetIdRegex = /^[a-zA-Z0-9-]{36}$/;
+    if (!datasetIdRegex.test(datasetId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid dataset ID format'
+      });
+    }
+    
     // Get access token
     const accessToken = await getAccessToken();
 
-    // Get refresh history
-    const historyUrl = `https://api.powerbi.com/v1.0/myorg/groups/${POWERBI_CONFIG.workspaceId}/datasets/${datasetId}/refreshes?$top=10`;
+    // SECURITY FIX: Use URL encoding for user input
+    const encodedDatasetId = encodeURIComponent(datasetId);
+    const historyUrl = `https://api.powerbi.com/v1.0/myorg/groups/${POWERBI_CONFIG.workspaceId}/datasets/${encodedDatasetId}/refreshes?$top=10`;
     
     const response = await axios.get(historyUrl, {
       headers: {
