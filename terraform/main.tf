@@ -145,9 +145,15 @@ resource "azurerm_application_insights" "main" {
   name                = "${var.project_name}-appinsights"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
-  application_type    = "Node.JS"
+  application_type    = "web"
   
   tags = var.tags
+  
+  lifecycle {
+    ignore_changes = [
+      application_type
+    ]
+  }
 }
 
 # Create Action Group for alerts
