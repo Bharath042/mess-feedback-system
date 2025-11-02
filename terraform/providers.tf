@@ -11,17 +11,12 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.1"
+      version = "~> 3.0"
     }
   }
-
-  # Optional: Configure remote state storage
-  # backend "azurerm" {
-  #   resource_group_name  = "terraform-state-rg"
-  #   storage_account_name = "terraformstate"
-  #   container_name       = "tfstate"
-  #   key                  = "mess-feedback-system.terraform.tfstate"
-  # }
+  
+  # Use local state for now (will be in .gitignore)
+  # Remote state can be configured later if needed
 }
 
 # Configure the Microsoft Azure Provider

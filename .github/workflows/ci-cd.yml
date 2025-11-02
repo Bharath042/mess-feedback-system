@@ -83,12 +83,35 @@ jobs:
       working-directory: ./terraform
       run: terraform init
     
-    - name: Delete and Recreate Container (Workaround)
+    - name: Import Existing Resources
       working-directory: ./terraform
       run: |
-        echo "Deleting existing container to allow Terraform to manage it..."
+        echo "Importing existing Azure resources into Terraform state..."
+        
+        # Import Resource Group
+        terraform import -input=false azurerm_resource_group.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi 2>/dev/null || echo "Resource group already in state"
+        
+        # Import SQL Server
+        terraform import -input=false azurerm_mssql_server.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver 2>/dev/null || echo "SQL Server already in state"
+        
+        # Import SQL Database
+        terraform import -input=false azurerm_mssql_database.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver/databases/messfeedbacksqlserver 2>/dev/null || echo "SQL Database already in state"
+        
+        # Import Firewall Rules
+        terraform import -input=false azurerm_mssql_firewall_rule.allow_azure_services /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver/firewallRules/AllowAzureServices 2>/dev/null || echo "Firewall rule 1 already in state"
+        terraform import -input=false azurerm_mssql_firewall_rule.allow_all /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver/firewallRules/AllowAll 2>/dev/null || echo "Firewall rule 2 already in state"
+        
+        # Import ACR
+        terraform import -input=false azurerm_container_registry.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.ContainerRegistry/registries/messfeedback 2>/dev/null || echo "ACR already in state"
+        
+        echo "Import complete!"
+      continue-on-error: false
+    
+    - name: Delete Existing Container
+      run: |
+        echo "Deleting existing container to recreate with monitoring..."
         az container delete --resource-group Kavi --name messfeedback-terraform --yes || true
-        echo "Container deleted, Terraform will create it with monitoring enabled"
+        echo "Container deleted"
     
     - name: Terraform Plan
       working-directory: ./terraform
