@@ -95,8 +95,15 @@ jobs:
         # Import existing SQL Database if not in state
         terraform import -input=false azurerm_mssql_database.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver/databases/messfeedbacksqlserver || true
         
+        # Import existing SQL Firewall Rules if not in state
+        terraform import -input=false azurerm_mssql_firewall_rule.allow_azure_services /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver/firewallRules/AllowAzureServices || true
+        terraform import -input=false azurerm_mssql_firewall_rule.allow_all /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.Sql/servers/messfeedbacksqlserver/firewallRules/AllowAll || true
+        
         # Import existing ACR if not in state
         terraform import -input=false azurerm_container_registry.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.ContainerRegistry/registries/messfeedback || true
+        
+        # Import existing Container Group if not in state
+        terraform import -input=false azurerm_container_group.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.ContainerInstance/containerGroups/messfeedback-terraform || true
         
         # Import existing Key Vault if not in state (will fail if doesn't exist, that's ok)
         terraform import -input=false azurerm_key_vault.main /subscriptions/0cd50e57-34f7-4857-9bab-4b3043f01dd2/resourceGroups/Kavi/providers/Microsoft.KeyVault/vaults/messfeedback-kv-728281c6 || true
