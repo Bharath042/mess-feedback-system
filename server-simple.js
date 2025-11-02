@@ -4021,9 +4021,10 @@ app.use('*', (req, res) => {
   });
 });
 
-// Start server
-server.listen(PORT, () => {
+// Start server - Bind to 0.0.0.0 for Docker/Azure Container Instances
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Student Login: http://localhost:${PORT}/student-login`);
   console.log(`🌐 Admin Login: http://localhost:${PORT}/admin-login`);
   console.log(`🔍 Health Check: http://localhost:${PORT}/health`);
