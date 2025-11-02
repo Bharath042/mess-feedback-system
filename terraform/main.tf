@@ -151,7 +151,8 @@ resource "azurerm_application_insights" "main" {
   
   lifecycle {
     ignore_changes = [
-      application_type
+      application_type,
+      workspace_id
     ]
   }
 }
