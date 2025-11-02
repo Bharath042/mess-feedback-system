@@ -1,5 +1,8 @@
 # 🍽️ Mess Feedback System
 
+[![Security Scanning](https://github.com/Bharath042/mess-feedback-system/actions/workflows/security-scan.yml/badge.svg)](https://github.com/Bharath042/mess-feedback-system/actions/workflows/security-scan.yml)
+[![CI/CD Pipeline](https://github.com/Bharath042/mess-feedback-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Bharath042/mess-feedback-system/actions/workflows/ci-cd.yml)
+
 A comprehensive web application for students to rate and provide feedback on mess food quality, built with modern web technologies and deployed on Azure cloud platform using **Infrastructure as Code (Terraform)** and **CI/CD pipelines**.
 
 ## 🏗️ Architecture

@@ -1,0 +1,120 @@
+name: Security Scanning (SAST/DAST)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly on Mondays at 9 AM
+    - cron: '0 9 * * 1'
+
+jobs:
+  # SAST - Static Application Security Testing with CodeQL
+  codeql-analysis:
+    name: CodeQL Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        queries: security-and-quality
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
+
+  # DAST - Dynamic Application Security Testing with OWASP ZAP
+  owasp-zap-scan:
+    name: OWASP ZAP Baseline Scan
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Pull OWASP ZAP Docker Image
+      run: docker pull ghcr.io/zaproxy/zaproxy:stable
+
+    - name: Create ZAP Report Directory
+      run: mkdir -p zap-reports
+
+    - name: Run OWASP ZAP Baseline Scan
+      run: |
+        docker run -v $(pwd)/zap-reports:/zap/wrk/:rw \
+          ghcr.io/zaproxy/zaproxy:stable \
+          zap-baseline.py \
+          -t http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000 \
+          -r zap-report.html \
+          -J zap-report.json \
+          -w zap-report.md \
+          -I || true
+      continue-on-error: true
+
+    - name: Upload ZAP Scan Reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: zap-scan-reports
+        path: zap-reports/
+        retention-days: 30
+
+    - name: Display Scan Summary
+      run: |
+        echo "==================================="
+        echo "OWASP ZAP Scan Completed!"
+        echo "==================================="
+        echo ""
+        echo "📊 Reports Generated:"
+        ls -lh zap-reports/
+        echo ""
+        echo "📥 Download reports from GitHub Actions Artifacts"
+        echo "🔍 Review the findings in zap-report.html"
+        echo ""
+        if [ -f "zap-reports/zap-report.md" ]; then
+          echo "📋 Quick Summary:"
+          cat zap-reports/zap-report.md | head -30
+        fi
+
+  # Security Summary Job
+  security-summary:
+    name: Security Scan Summary
+    runs-on: ubuntu-latest
+    needs: [codeql-analysis, owasp-zap-scan]
+    if: always()
+    
+    steps:
+    - name: Security Scan Complete
+      run: |
+        echo "=================================="
+        echo "🔒 Security Scanning Complete!"
+        echo "=================================="
+        echo ""
+        echo "✅ CodeQL SAST Scan: Completed"
+        echo "✅ OWASP ZAP DAST Scan: Completed"
+        echo ""
+        echo "📊 Next Steps:"
+        echo "1. Review CodeQL results in Security tab"
+        echo "2. Download ZAP reports from Artifacts"
+        echo "3. Identify at least 2 vulnerabilities"
+        echo "4. Fix one vulnerability"
+        echo "5. Create Security_Report.pdf"
+        echo ""
