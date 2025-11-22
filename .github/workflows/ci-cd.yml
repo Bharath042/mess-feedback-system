@@ -82,6 +82,16 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
+    - name: Register Required Resource Providers
+      run: |
+        echo "Registering required Azure resource providers..."
+        az provider register --namespace Microsoft.Sql
+        az provider register --namespace Microsoft.ContainerInstance
+        az provider register --namespace Microsoft.ContainerRegistry
+        az provider register --namespace Microsoft.KeyVault
+        az provider register --namespace Microsoft.Insights
+        echo "Resource providers registered"
+    
     - name: Terraform Init
       working-directory: ./terraform
       run: terraform init

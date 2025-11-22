@@ -32,6 +32,9 @@ provider "azurerm" {
       recover_soft_deleted_key_vaults = true
     }
   }
+  
+  # Skip automatic provider registration to avoid concurrent write conflicts
+  skip_provider_registration = true
 }
 
 # Data source to get current client configuration
