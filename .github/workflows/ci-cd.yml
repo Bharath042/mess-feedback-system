@@ -96,6 +96,12 @@ jobs:
       working-directory: ./terraform
       run: terraform init
     
+    - name: Import Existing Resource Group
+      working-directory: ./terraform
+      run: |
+        echo "Importing existing resource group..."
+        terraform import -input=false azurerm_resource_group.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg 2>/dev/null || echo "Resource group already in state"
+    
     - name: Terraform Plan
       working-directory: ./terraform
       env:
