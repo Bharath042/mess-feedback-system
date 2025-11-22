@@ -90,6 +90,7 @@ jobs:
         az provider register --namespace Microsoft.ContainerRegistry
         az provider register --namespace Microsoft.KeyVault
         az provider register --namespace Microsoft.Insights
+        az provider register --namespace Microsoft.AlertsManagement
         echo "Resource providers registered"
     
     - name: Terraform Init
