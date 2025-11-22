@@ -213,9 +213,9 @@ resource "azurerm_container_group" "main" {
 
   # Image registry credentials for ACR access
   image_registry_credential {
-    server   = azurerm_container_registry.main.login_server
-    username = azurerm_container_registry.main.admin_username
-    password = azurerm_container_registry.main.admin_password
+    server   = data.azurerm_container_registry.main.login_server
+    username = data.azurerm_container_registry.main.admin_username
+    password = data.azurerm_container_registry.main.admin_password
   }
 
   # Main application container

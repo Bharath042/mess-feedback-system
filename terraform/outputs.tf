@@ -30,17 +30,17 @@ output "sql_database_name" {
 # Container Registry Information
 output "acr_name" {
   description = "Name of the Azure Container Registry"
-  value       = azurerm_container_registry.main.name
+  value       = data.azurerm_container_registry.main.name
 }
 
 output "acr_login_server" {
   description = "Login server URL for the Azure Container Registry"
-  value       = azurerm_container_registry.main.login_server
+  value       = data.azurerm_container_registry.main.login_server
 }
 
 output "acr_admin_username" {
   description = "Admin username for the Azure Container Registry"
-  value       = azurerm_container_registry.main.admin_username
+  value       = data.azurerm_container_registry.main.admin_username
   sensitive   = true
 }
 
@@ -147,7 +147,7 @@ output "deployment_summary" {
     resource_group     = azurerm_resource_group.main.name
     location           = azurerm_resource_group.main.location
     sql_server         = azurerm_mssql_server.main.name
-    container_registry = azurerm_container_registry.main.name
+    container_registry = data.azurerm_container_registry.main.name
     container_group    = azurerm_container_group.main.name
     key_vault          = azurerm_key_vault.main.name
     app_insights       = azurerm_application_insights.main.name
