@@ -2,10 +2,10 @@ const sql = require('mssql');
 
 // Production database configuration
 const config = {
-    server: 'messfeedbacksqlserver.database.windows.net',
-    database: 'messfeedbacksqlserver',
-    user: 'sqladmin',
-    password: 'Kavi@1997',
+    server: process.env.DB_SERVER || 'messfeedback-sqlserver-bharath.database.windows.net',
+    database: process.env.DB_DATABASE || 'messfeedbacksqlserver',
+    user: process.env.DB_USER || 'sqladmin',
+    password: process.env.DB_PASSWORD || 'Kavi@1997',
     port: 1433,
     options: {
         encrypt: true,
