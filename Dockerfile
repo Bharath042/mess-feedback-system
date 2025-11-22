@@ -15,8 +15,8 @@ COPY package*.json ./
 RUN npm ci --only=production && \
     npm cache clean --force
 
-# Copy essential application files (DATABASE VERSION)
-COPY server-simple.js ./
+# Copy essential application files (STARTUP VERSION - Non-blocking)
+COPY server-startup.js ./
 COPY config/ ./config/
 COPY views/ ./views/
 COPY routes/ ./routes/
@@ -37,5 +37,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
     CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
-# Start the application (DATABASE VERSION)
-CMD ["node", "server-simple.js"]
+# Start the application (STARTUP VERSION - Non-blocking database connection)
+CMD ["node", "server-startup.js"]
