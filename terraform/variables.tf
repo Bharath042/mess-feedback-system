@@ -16,7 +16,7 @@ variable "environment" {
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "eastus"
+  default     = "southeastasia"
 }
 
 # Resource Group
@@ -56,7 +56,7 @@ variable "sql_admin_password" {
 variable "acr_name" {
   description = "Name of the Azure Container Registry"
   type        = string
-  default     = "messfeedback"  # Your existing ACR
+  default     = "messfeedbackbharath"  # Your new ACR in your account
 }
 
 variable "acr_sku" {
