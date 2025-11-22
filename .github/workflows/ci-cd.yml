@@ -122,22 +122,19 @@ jobs:
       working-directory: ./terraform
       env:
         TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
-        TF_VAR_location: southeastasia
-        TF_VAR_resource_group_name: mess-feedback-rg
-        TF_VAR_sql_server_name: messfeedback-sqlserver-bharath
-        TF_VAR_acr_name: messfeedbackbharath
-        TF_VAR_container_image: messfeedbackbharath.azurecr.io/mess-feedback-system:latest
-      run: terraform plan -out=tfplan
+      run: |
+        terraform plan \
+          -var="location=southeastasia" \
+          -var="resource_group_name=mess-feedback-rg" \
+          -var="sql_server_name=messfeedback-sqlserver-bharath" \
+          -var="acr_name=messfeedbackbharath" \
+          -var="container_image=messfeedbackbharath.azurecr.io/mess-feedback-system:latest" \
+          -out=tfplan
     
     - name: Terraform Apply
       working-directory: ./terraform
       env:
         TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
-        TF_VAR_location: southeastasia
-        TF_VAR_resource_group_name: mess-feedback-rg
-        TF_VAR_sql_server_name: messfeedback-sqlserver-bharath
-        TF_VAR_acr_name: messfeedbackbharath
-        TF_VAR_container_image: messfeedbackbharath.azurecr.io/mess-feedback-system:latest
       run: terraform apply -auto-approve tfplan
       
     - name: Get Container URL
