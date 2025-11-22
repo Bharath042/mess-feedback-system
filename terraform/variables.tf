@@ -75,7 +75,7 @@ variable "container_group_name" {
 variable "container_image" {
   description = "Container image to deploy"
   type        = string
-  default     = "messfeedback.azurecr.io/mess-feedback-system:latest"
+  default     = "messfeedbackbharath.azurecr.io/mess-feedback-system:latest"
 }
 
 variable "container_cpu" {
