@@ -52,15 +52,11 @@ resource "azurerm_mssql_firewall_rule" "allow_all" {
   end_ip_address   = "255.255.255.255"
 }
 
-# Import existing Azure Container Registry
-resource "azurerm_container_registry" "main" {
+# Data source to reference existing Azure Container Registry
+# (ACR is created manually and managed separately)
+data "azurerm_container_registry" "main" {
   name                = var.acr_name
   resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-  sku                 = var.acr_sku
-  admin_enabled       = true
-  
-  tags = var.tags
 }
 
 # Generate random password for Key Vault access
