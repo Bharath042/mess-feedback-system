@@ -10,27 +10,25 @@ variable "project_name" {
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
-  default     = "prod"
 }
 
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "Central India"
+  default     = "eastus"
 }
 
 # Resource Group
 variable "resource_group_name" {
   description = "Name of the resource group"
-  type        = string
-  default     = "Kavi"  # Your existing resource group
+  default     = "mess-feedback-rg"  # New resource group for your account
 }
 
 # Database Configuration
 variable "sql_server_name" {
   description = "Name of the SQL Server"
   type        = string
-  default     = "messfeedbacksqlserver"  # Your existing SQL server
+  default     = "messfeedback-sqlserver-bharath"  # New SQL server (must be globally unique)
 }
 
 variable "sql_database_name" {
