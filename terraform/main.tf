@@ -30,7 +30,7 @@ resource "azurerm_mssql_database" "main" {
   name           = var.sql_database_name
   server_id      = azurerm_mssql_server.main.id
   collation      = "SQL_Latin1_General_CP1_CI_AS"
-  sku_name       = "GP_S_Gen5_1"
+  sku_name       = "S0"
   zone_redundant = false
   
   tags = var.tags
