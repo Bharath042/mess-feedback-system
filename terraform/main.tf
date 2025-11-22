@@ -6,11 +6,6 @@ resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.location
   tags     = var.tags
-
-  lifecycle {
-    # Prevent accidental deletion of existing resource group
-    prevent_destroy = true
-  }
 }
 
 # Import existing SQL Server
@@ -25,8 +20,6 @@ resource "azurerm_mssql_server" "main" {
   tags = var.tags
 
   lifecycle {
-    # Prevent accidental deletion of existing SQL server
-    prevent_destroy = true
     # Ignore changes to password to avoid conflicts
     ignore_changes = [administrator_login_password]
   }
@@ -41,11 +34,6 @@ resource "azurerm_mssql_database" "main" {
   zone_redundant = false
   
   tags = var.tags
-
-  lifecycle {
-    # Prevent accidental deletion of existing database
-    prevent_destroy = true
-  }
 }
 
 # SQL Server Firewall Rule - Allow Azure Services
@@ -73,11 +61,6 @@ resource "azurerm_container_registry" "main" {
   admin_enabled       = true
   
   tags = var.tags
-
-  lifecycle {
-    # Prevent accidental deletion of existing ACR
-    prevent_destroy = true
-  }
 }
 
 # Generate random password for Key Vault access
