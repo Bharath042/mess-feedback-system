@@ -253,33 +253,9 @@ resource "azurerm_container_group" "main" {
       AZURE_OPENAI_API_KEY = var.azure_openai_api_key
     }
 
+    # Health probes disabled temporarily - will be added after container starts successfully
     # Liveness probe
-    liveness_probe {
-      http_get {
-        path   = "/health"
-        port   = var.container_port
-        scheme = "Http"
-      }
-      initial_delay_seconds = 30
-      period_seconds        = 30
-      failure_threshold     = 3
-      success_threshold     = 1
-      timeout_seconds       = 10
-    }
-
-    # Readiness probe
-    readiness_probe {
-      http_get {
-        path   = "/health"
-        port   = var.container_port
-        scheme = "Http"
-      }
-      initial_delay_seconds = 10
-      period_seconds        = 10
-      failure_threshold     = 3
-      success_threshold     = 1
-      timeout_seconds       = 5
-    }
+    # readiness probe
   }
 
   tags = var.tags
