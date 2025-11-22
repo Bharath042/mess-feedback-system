@@ -65,6 +65,13 @@ variable "acr_sku" {
   default     = "Basic"
 }
 
+variable "acr_admin_password" {
+  description = "Admin password for Azure Container Registry"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 # Container Instance
 variable "container_group_name" {
   description = "Name of the container group"

@@ -118,10 +118,18 @@ jobs:
         
         echo "Import complete"
     
+    - name: Get ACR Admin Password
+      id: acr_password
+      run: |
+        ACR_PASSWORD=$(az acr credential show --name messfeedbackbharath --query "passwords[0].value" -o tsv)
+        echo "::add-mask::$ACR_PASSWORD"
+        echo "password=$ACR_PASSWORD" >> $GITHUB_OUTPUT
+    
     - name: Terraform Plan
       working-directory: ./terraform
       env:
         TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        TF_VAR_acr_admin_password: ${{ steps.acr_password.outputs.password }}
       run: |
         terraform plan \
           -var="location=southeastasia" \
@@ -135,6 +143,7 @@ jobs:
       working-directory: ./terraform
       env:
         TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        TF_VAR_acr_admin_password: ${{ steps.acr_password.outputs.password }}
       run: terraform apply -auto-approve tfplan
       
     - name: Get Container URL

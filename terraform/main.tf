@@ -215,7 +215,7 @@ resource "azurerm_container_group" "main" {
   image_registry_credential {
     server   = data.azurerm_container_registry.main.login_server
     username = data.azurerm_container_registry.main.admin_username
-    password = data.azurerm_container_registry.main.admin_password
+    password = var.acr_admin_password
   }
 
   # Main application container
