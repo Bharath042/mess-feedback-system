@@ -33,9 +33,9 @@ USER nodejs
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Add health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+# Add health check - Increased start-period to allow app initialization
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+    CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
 # Start the application (DATABASE VERSION)
 CMD ["node", "server-simple.js"]
