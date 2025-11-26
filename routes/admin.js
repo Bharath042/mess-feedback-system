@@ -9,8 +9,49 @@ const router = express.Router();
 router.use(protect);
 router.use(authorize('admin', 'mess_manager'));
 
+// @desc    Get admin profile
+// @route   GET /api/admin/profile
+// @access  Private (Admin/Manager)
+router.get('/profile', async (req, res, next) => {
+  try {
+    const pool = await getPool();
+    
+    const result = await pool.request()
+      .input('id', sql.Int, req.user.id)
+      .query(`
+        SELECT id, username, role, is_active, created_at
+        FROM users
+        WHERE id = @id
+      `);
+    
+    if (result.recordset.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin profile not found'
+      });
+    }
+    
+    const admin = result.recordset[0];
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        id: admin.id,
+        username: admin.username,
+        role: admin.role,
+        is_active: admin.is_active,
+        created_at: admin.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Get admin profile error:', error);
+    next(error);
+  }
+});
+
 // @desc    Get dashboard statistics
 // @route   GET /api/admin/dashboard
+// @route   GET /api/admin/dashboard/stats
 // @access  Private (Admin/Manager)
 router.get('/dashboard', async (req, res, next) => {
   try {
@@ -67,6 +108,42 @@ router.get('/dashboard', async (req, res, next) => {
           ...mh,
           avg_rating: parseFloat((mh.avg_rating || 0).toFixed(2))
         }))
+      }
+    });
+
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
+    next(error);
+  }
+});
+
+// @desc    Get dashboard statistics (alternative route)
+// @route   GET /api/admin/dashboard/stats
+// @access  Private (Admin/Manager)
+router.get('/dashboard/stats', async (req, res, next) => {
+  try {
+    const pool = await getPool();
+
+    // Get overall statistics
+    const statsResult = await pool.request().query(`
+      SELECT 
+        (SELECT COUNT(*) FROM users WHERE is_active = 1) as total_users,
+        (SELECT COUNT(*) FROM mess_halls WHERE is_active = 1) as total_mess_halls,
+        (SELECT COUNT(*) FROM Feedback WHERE created_at >= DATEADD(day, -30, GETDATE())) as feedback_last_30_days,
+        (SELECT AVG(CAST(Rating AS FLOAT)) FROM Feedback WHERE created_at >= DATEADD(day, -30, GETDATE())) as avg_rating_last_30_days
+    `);
+
+    const stats = statsResult.recordset[0];
+
+    res.status(200).json({
+      success: true,
+      data: {
+        overview: {
+          total_users: stats.total_users,
+          total_mess_halls: stats.total_mess_halls,
+          feedback_last_30_days: stats.feedback_last_30_days,
+          avg_rating_last_30_days: parseFloat((stats.avg_rating_last_30_days || 0).toFixed(2))
+        }
       }
     });
 
