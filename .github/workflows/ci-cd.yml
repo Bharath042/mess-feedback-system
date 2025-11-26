@@ -63,134 +63,136 @@ jobs:
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-  deploy-with-terraform:
-    needs: build-and-push-docker
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.6.0
-    
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-    
-    - name: Register Required Resource Providers
-      run: |
-        echo "Registering required Azure resource providers..."
-        az provider register --namespace Microsoft.Sql
-        az provider register --namespace Microsoft.ContainerInstance
-        az provider register --namespace Microsoft.ContainerRegistry
-        az provider register --namespace Microsoft.KeyVault
-        az provider register --namespace Microsoft.Insights
-        az provider register --namespace Microsoft.AlertsManagement
-        echo "Resource providers registered"
-    
-    - name: Terraform Init
-      working-directory: ./terraform
-      run: terraform init
-    
-    - name: Import Existing Resources
-      working-directory: ./terraform
-      run: |
-        echo "Importing existing resources into Terraform state..."
-        
-        # Import Resource Group
-        terraform import -input=false azurerm_resource_group.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg 2>/dev/null || true
-        
-        # Import SQL Server if it exists
-        terraform import -input=false azurerm_mssql_server.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg/providers/Microsoft.Sql/servers/messfeedback-sqlserver-bharath 2>/dev/null || true
-        
-        # Import SQL Database if it exists
-        terraform import -input=false azurerm_mssql_database.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg/providers/Microsoft.Sql/servers/messfeedback-sqlserver-bharath/databases/messfeedbacksqlserver 2>/dev/null || true
-        
-        # Import Application Insights if it exists
-        terraform import -input=false azurerm_application_insights.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg/providers/Microsoft.Insights/components/mess-feedback-system-appinsights 2>/dev/null || true
-        
-        # Import Action Group if it exists
-        terraform import -input=false azurerm_monitor_action_group.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg/providers/Microsoft.Insights/actionGroups/mess-feedback-system-action-group 2>/dev/null || true
-        
-        echo "Import complete"
-    
-    - name: Get ACR Admin Password
-      id: acr_password
-      run: |
-        ACR_PASSWORD=$(az acr credential show --name messfeedbackbharath --query "passwords[0].value" -o tsv)
-        echo "::add-mask::$ACR_PASSWORD"
-        echo "password=$ACR_PASSWORD" >> $GITHUB_OUTPUT
-    
-    - name: Terraform Plan
-      working-directory: ./terraform
-      env:
-        TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
-        TF_VAR_acr_admin_password: ${{ steps.acr_password.outputs.password }}
-      run: |
-        terraform plan \
-          -var="location=southeastasia" \
-          -var="resource_group_name=mess-feedback-rg" \
-          -var="sql_server_name=messfeedback-sqlserver-bharath" \
-          -var="acr_name=messfeedbackbharath" \
-          -var="container_image=messfeedbackbharath.azurecr.io/mess-feedback-system:latest" \
-          -out=tfplan
-    
-    - name: Terraform Apply
-      working-directory: ./terraform
-      env:
-        TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
-        TF_VAR_acr_admin_password: ${{ steps.acr_password.outputs.password }}
-      run: terraform apply -auto-approve tfplan
-      
-    - name: Get Container URL
-      working-directory: ./terraform
-      run: |
-        echo "Deployment complete!"
-        terraform output container_url || echo "Container URL: http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000"
+  # DISABLED: Using manual Azure CLI deployment instead of Terraform
+  # deploy-with-terraform:
+  #   needs: build-and-push-docker
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #   
+  #   - name: Setup Terraform
+  #     uses: hashicorp/setup-terraform@v3
+  #     with:
+  #       terraform_version: 1.6.0
+  #   
+  #   - name: Azure Login
+  #     uses: azure/login@v1
+  #     with:
+  #       creds: ${{ secrets.AZURE_CREDENTIALS }}
+  #   
+  #   - name: Register Required Resource Providers
+  #     run: |
+  #       echo "Registering required Azure resource providers..."
+  #       az provider register --namespace Microsoft.Sql
+  #       az provider register --namespace Microsoft.ContainerInstance
+  #       az provider register --namespace Microsoft.ContainerRegistry
+  #       az provider register --namespace Microsoft.KeyVault
+  #       az provider register --namespace Microsoft.Insights
+  #       az provider register --namespace Microsoft.AlertsManagement
+  #       echo "Resource providers registered"
+  #   
+  #   - name: Terraform Init
+  #     working-directory: ./terraform
+  #     run: terraform init
+  #   
+  #   - name: Import Existing Resources
+  #     working-directory: ./terraform
+  #     run: |
+  #       echo "Importing existing resources into Terraform state..."
+  #       
+  #       # Import Resource Group
+  #       terraform import -input=false azurerm_resource_group.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg 2>/dev/null || true
+  #       
+  #       # Import SQL Server if it exists
+  #       terraform import -input=false azurerm_mssql_server.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg/providers/Microsoft.Sql/servers/messfeedback-sqlserver-bharath 2>/dev/null || true
+  #       
+  #       # Import SQL Database if it exists
+  #       terraform import -input=false azurerm_mssql_database.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg/providers/Microsoft.Sql/servers/messfeedback-sqlserver-bharath/databases/messfeedbacksqlserver 2>/dev/null || true
+  #       
+  #       # Import Application Insights if it exists
+  #       terraform import -input=false azurerm_application_insights.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg/providers/Microsoft.Insights/components/mess-feedback-system-appinsights 2>/dev/null || true
+  #       
+  #       # Import Action Group if it exists
+  #       terraform import -input=false azurerm_monitor_action_group.main /subscriptions/5a325f12-e7d9-4b96-a8b0-e3c48891ef40/resourceGroups/mess-feedback-rg/providers/Microsoft.Insights/actionGroups/mess-feedback-system-action-group 2>/dev/null || true
+  #       
+  #       echo "Import complete"
+  #   
+  #   - name: Get ACR Admin Password
+  #     id: acr_password
+  #     run: |
+  #       ACR_PASSWORD=$(az acr credential show --name messfeedbackbharath --query "passwords[0].value" -o tsv)
+  #       echo "::add-mask::$ACR_PASSWORD"
+  #       echo "password=$ACR_PASSWORD" >> $GITHUB_OUTPUT
+  #   
+  #   - name: Terraform Plan
+  #     working-directory: ./terraform
+  #     env:
+  #       TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
+  #       TF_VAR_acr_admin_password: ${{ steps.acr_password.outputs.password }}
+  #     run: |
+  #       terraform plan \
+  #         -var="location=southeastasia" \
+  #         -var="resource_group_name=mess-feedback-rg" \
+  #         -var="sql_server_name=messfeedback-sqlserver-bharath" \
+  #         -var="acr_name=messfeedbackbharath" \
+  #         -var="container_image=messfeedbackbharath.azurecr.io/mess-feedback-system:latest" \
+  #         -out=tfplan
+  #   
+  #   - name: Terraform Apply
+  #     working-directory: ./terraform
+  #     env:
+  #       TF_VAR_azure_openai_api_key: ${{ secrets.AZURE_OPENAI_API_KEY }}
+  #       TF_VAR_acr_admin_password: ${{ steps.acr_password.outputs.password }}
+  #     run: terraform apply -auto-approve tfplan
+  #     
+  #   - name: Get Container URL
+  #     working-directory: ./terraform
+  #     run: |
+  #       echo "Deployment complete!"
+  #       terraform output container_url || echo "Container URL: http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000"
 
-  health-check:
-    needs: deploy-with-terraform
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Wait for deployment
-      run: sleep 60
-    
-    - name: Health Check
-      run: |
-        max_retries=10
-        retry_count=0
-        app_url="http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000"
-        
-        echo "Starting health check for $app_url"
-        
-        while [ $retry_count -lt $max_retries ]; do
-          retry_count=$((retry_count + 1))
-          echo "Health check attempt $retry_count of $max_retries"
-          
-          if curl -f -s "$app_url/health" > /dev/null; then
-            echo "✅ Health check passed!"
-            
-            # Test version endpoint
-            echo "Testing version endpoint..."
-            curl -s "$app_url/version" | jq '.'
-            
-            echo "🎉 Deployment successful!"
-            echo "🌐 Application URL: $app_url"
-            echo "👨‍🎓 Student Portal: $app_url/student-login"
-            echo "👨‍💼 Admin Portal: $app_url/admin-dashboard"
-            exit 0
-          else
-            echo "❌ Health check failed, retrying in 30 seconds..."
-            sleep 30
-          fi
-        done
-        
-        echo "❌ Health check failed after $max_retries attempts"
-        exit 1
+  # DISABLED: Manual deployment is working fine
+  # health-check:
+  #   needs: deploy-with-terraform
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #   - name: Wait for deployment
+  #     run: sleep 60
+  #   
+  #   - name: Health Check
+  #     run: |
+  #       max_retries=10
+  #       retry_count=0
+  #       app_url="http://mess-feedback-system-prod.centralindia.azurecontainer.io:3000"
+  #       
+  #       echo "Starting health check for $app_url"
+  #       
+  #       while [ $retry_count -lt $max_retries ]; do
+  #         retry_count=$((retry_count + 1))
+  #         echo "Health check attempt $retry_count of $max_retries"
+  #         
+  #         if curl -f -s "$app_url/health" > /dev/null; then
+  #           echo "✅ Health check passed!"
+  #           
+  #           # Test version endpoint
+  #           echo "Testing version endpoint..."
+  #           curl -s "$app_url/version" | jq '.'
+  #           
+  #           echo "🎉 Deployment successful!"
+  #           echo "🌐 Application URL: $app_url"
+  #           echo "👨‍🎓 Student Portal: $app_url/student-login"
+  #           echo "👨‍💼 Admin Portal: $app_url/admin-dashboard"
+  #           exit 0
+  #         else
+  #           echo "❌ Health check failed, retrying in 30 seconds..."
+  #           sleep 30
+  #         fi
+  #       done
+  #       
+  #       echo "❌ Health check failed after $max_retries attempts"
+  #       exit 1
