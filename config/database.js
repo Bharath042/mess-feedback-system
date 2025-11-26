@@ -38,8 +38,8 @@ const connectDB = async () => {
     const pool = await poolPromise;
     console.log('Connected to Azure SQL Database');
     
-    // Initialize database tables
-    await initializeTables(pool);
+    // Skip table initialization - tables should already exist
+    // await initializeTables(pool);
     
     return pool;
   } catch (error) {

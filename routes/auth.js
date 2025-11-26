@@ -32,14 +32,8 @@ const sendTokenResponse = (user, statusCode, res) => {
       token,
       user: {
         id: user.id,
-        student_id: user.student_id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        role: user.role,
-        hostel: user.hostel,
-        year_of_study: user.year_of_study,
-        department: user.department
+        username: user.username,
+        role: user.role
       }
     });
 };
@@ -175,14 +169,13 @@ router.post('/login', [
 
     const pool = await getPool();
 
-    // Find user by student_id or email
+    // Find user by username
     const result = await pool.request()
       .input('login', sql.NVarChar, login)
       .query(`
-        SELECT id, student_id, email, password_hash, first_name, last_name, 
-               role, hostel, year_of_study, department, is_active
+        SELECT id, username, password, role, is_active
         FROM users 
-        WHERE (student_id = @login OR email = @login) AND is_active = 1
+        WHERE username = @login AND is_active = 1
       `);
 
     if (result.recordset.length === 0) {
@@ -195,7 +188,11 @@ router.post('/login', [
     const user = result.recordset[0];
 
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+    console.log('🔐 DEBUG: Comparing password');
+    console.log('🔐 DEBUG: Provided password:', password);
+    console.log('🔐 DEBUG: Stored hash:', user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log('🔐 DEBUG: Password match result:', isMatch);
 
     if (!isMatch) {
       return res.status(401).json({
