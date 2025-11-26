@@ -39,11 +39,21 @@ app.use(helmet({
       connectSrc: ["'self'", "ws:", "wss:", "http:", "https:"],  // Allow WebSocket and API connections
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "data:"],
       formAction: ["'self'", "http:", "https:"],  // Allow form submissions to any origin
+      upgradeInsecureRequests: [],  // Don't upgrade HTTP to HTTPS
     },
   },
   hsts: false,  // Disable HSTS to allow HTTP connections
   crossOriginOpenerPolicy: false,  // Disable COOP header for HTTP
 }));
+
+// Explicitly remove HSTS and add headers to prevent HTTPS upgrade
+app.use((req, res, next) => {
+  res.removeHeader('Strict-Transport-Security');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
 
 // Rate limiting
 const limiter = rateLimit({
