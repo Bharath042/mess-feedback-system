@@ -31,8 +31,7 @@ const protect = async (req, res, next) => {
       const result = await pool.request()
         .input('userId', sql.Int, decoded.id)
         .query(`
-          SELECT id, student_id, email, first_name, last_name, role, hostel, 
-                 year_of_study, department, is_active, created_at
+          SELECT id, username, role, is_active, created_at
           FROM users 
           WHERE id = @userId AND is_active = 1
         `);
@@ -47,6 +46,7 @@ const protect = async (req, res, next) => {
       req.user = result.recordset[0];
       next();
     } catch (error) {
+      console.error('Token verification error:', error.message);
       return res.status(401).json({
         success: false,
         message: 'Not authorized to access this route'
@@ -92,8 +92,7 @@ const optionalAuth = async (req, res, next) => {
         const result = await pool.request()
           .input('userId', sql.Int, decoded.id)
           .query(`
-            SELECT id, student_id, email, first_name, last_name, role, hostel, 
-                   year_of_study, department, is_active, created_at
+            SELECT id, username, role, is_active, created_at
             FROM users 
             WHERE id = @userId AND is_active = 1
           `);
