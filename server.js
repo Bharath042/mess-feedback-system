@@ -6,6 +6,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const fs = require('fs');
 const http = require('http');
 const socketIO = require('socket.io');
 require('dotenv').config();
@@ -123,8 +124,11 @@ app.use('/api/complaints', complaintsRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Serve React app (for production) - AFTER API routes
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client/build')));
+// Note: React build is served from views/student-login.html for now
+// In production, ensure client/build exists or disable this section
+const buildPath = path.join(__dirname, 'client/build');
+if (process.env.NODE_ENV === 'production' && fs.existsSync(buildPath)) {
+  app.use(express.static(buildPath));
   
   // Catch-all for React app - only for non-API routes
   app.get('*', (req, res) => {
@@ -135,7 +139,7 @@ if (process.env.NODE_ENV === 'production') {
         message: 'Route not found'
       });
     }
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+    res.sendFile(path.join(buildPath, 'index.html'));
   });
 }
 
