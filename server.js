@@ -116,20 +116,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Database connection status tracker
-let dbConnected = false;
-
-// Middleware to check database connection for API routes
-app.use('/api/', (req, res, next) => {
-  if (!dbConnected) {
-    return res.status(503).json({
-      success: false,
-      message: 'Database not connected yet. Please try again in a moment.'
-    });
-  }
-  next();
-});
-
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/feedback', feedbackRoutes);
@@ -182,7 +168,6 @@ function startServer() {
   // Initialize database connection in background (non-blocking)
   connectDB()
     .then(() => {
-      dbConnected = true;
       console.log('✅ Database connected successfully');
     })
     .catch((error) => {
@@ -192,13 +177,12 @@ function startServer() {
       setTimeout(() => {
         connectDB()
           .then(() => {
-            dbConnected = true;
             console.log('✅ Database connected successfully on retry');
           })
           .catch((retryError) => {
             console.error('❌ Database connection retry failed:', retryError.message);
             // Retry again after 10 seconds
-            setTimeout(arguments.callee, 10000);
+            setTimeout(startServer, 10000);
           });
       }, 10000);
     });
