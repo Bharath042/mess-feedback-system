@@ -41,6 +41,8 @@ app.use(helmet({
       formAction: ["'self'", "http:", "https:"],  // Allow form submissions to any origin
     },
   },
+  hsts: false,  // Disable HSTS to allow HTTP connections
+  crossOriginOpenerPolicy: false,  // Disable COOP header for HTTP
 }));
 
 // Rate limiting
