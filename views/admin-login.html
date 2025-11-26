@@ -805,7 +805,7 @@
 
             const formData = new FormData(loginForm);
             const loginData = {
-                username: formData.get('username'),
+                login: formData.get('username'),  // API expects 'login' field
                 password: formData.get('password')
             };
 
