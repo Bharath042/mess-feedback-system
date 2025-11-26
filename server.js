@@ -6,6 +6,8 @@ const compression = require('compression');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const http = require('http');
+const socketIO = require('socket.io');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -16,6 +18,13 @@ const { connectDB } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 // Security middleware
@@ -26,7 +35,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
       scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "ws:", "wss:"],  // Allow WebSocket connections for Socket.IO
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
     },
   },
@@ -107,6 +116,20 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Database connection status tracker
+let dbConnected = false;
+
+// Middleware to check database connection for API routes
+app.use('/api/', (req, res, next) => {
+  if (!dbConnected) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database not connected yet. Please try again in a moment.'
+    });
+  }
+  next();
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/feedback', feedbackRoutes);
@@ -133,21 +156,52 @@ app.use('*', (req, res) => {
   });
 });
 
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('New client connected:', socket.id);
+  
+  socket.on('join-student', (data) => {
+    console.log('Student joined:', data);
+    socket.join('students');
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
 // Initialize database and start server
-async function startServer() {
-  try {
-    await connectDB();
-    console.log('✅ Database connected successfully');
-    
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+function startServer() {
+  // Start server immediately - don't wait for database
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  });
+  
+  // Initialize database connection in background (non-blocking)
+  connectDB()
+    .then(() => {
+      dbConnected = true;
+      console.log('✅ Database connected successfully');
+    })
+    .catch((error) => {
+      console.error('❌ Database connection failed:', error.message);
+      console.log('⚠️  Server running without database - will retry in 10 seconds...');
+      // Retry after 10 seconds
+      setTimeout(() => {
+        connectDB()
+          .then(() => {
+            dbConnected = true;
+            console.log('✅ Database connected successfully on retry');
+          })
+          .catch((retryError) => {
+            console.error('❌ Database connection retry failed:', retryError.message);
+            // Retry again after 10 seconds
+            setTimeout(arguments.callee, 10000);
+          });
+      }, 10000);
     });
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
 }
 
 // Graceful shutdown
