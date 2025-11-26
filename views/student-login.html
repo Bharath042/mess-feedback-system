@@ -632,7 +632,9 @@
 
             try {
                 console.log('🔍 DEBUG: Sending fetch request to /api/auth/login');
-                const response = await fetch('/api/auth/login', {
+                const apiUrl = `${window.location.protocol}//${window.location.host}/api/auth/login`;
+                console.log('🔍 DEBUG: Full API URL:', apiUrl);
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
