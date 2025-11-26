@@ -116,17 +116,25 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
+// API routes - MUST be before catch-all routes
 app.use('/api/auth', authRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/complaints', complaintsRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Serve React app (for production)
+// Serve React app (for production) - AFTER API routes
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'client/build')));
   
+  // Catch-all for React app - only for non-API routes
   app.get('*', (req, res) => {
+    // Don't serve React app for API routes
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({
+        success: false,
+        message: 'Route not found'
+      });
+    }
     res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
   });
 }
