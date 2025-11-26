@@ -31,19 +31,24 @@ let poolPromise;
 
 const connectDB = async () => {
   try {
+    console.log('🔗 [DB] Attempting to connect to database...');
+    console.log('🔗 [DB] Server:', config.server);
+    console.log('🔗 [DB] Database:', config.database);
+    console.log('🔗 [DB] User:', config.user);
+    
     if (!poolPromise) {
       poolPromise = new sql.ConnectionPool(config).connect();
     }
     
     const pool = await poolPromise;
-    console.log('Connected to Azure SQL Database');
+    console.log('✅ [DB] Connected to Azure SQL Database');
     
     // Skip table initialization - tables should already exist
     // await initializeTables(pool);
     
     return pool;
   } catch (error) {
-    console.error('Database connection failed:', error);
+    console.error('❌ [DB] Database connection failed:', error.message);
     throw error;
   }
 };

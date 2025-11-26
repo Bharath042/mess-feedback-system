@@ -166,10 +166,13 @@ router.post('/login', [
     }
 
     const { login, password } = req.body;
+    console.log('🔐 [AUTH] Login attempt:', login);
 
     const pool = await getPool();
+    console.log('🔐 [AUTH] Database pool obtained');
 
     // Find user by username
+    console.log('🔐 [AUTH] Querying user:', login);
     const result = await pool.request()
       .input('login', sql.NVarChar, login)
       .query(`
@@ -177,8 +180,10 @@ router.post('/login', [
         FROM users 
         WHERE username = @login AND is_active = 1
       `);
+    console.log('🔐 [AUTH] Query result count:', result.recordset.length);
 
     if (result.recordset.length === 0) {
+      console.log('🔐 [AUTH] User not found:', login);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -186,21 +191,22 @@ router.post('/login', [
     }
 
     const user = result.recordset[0];
+    console.log('🔐 [AUTH] User found:', user.username, 'ID:', user.id);
 
     // Check password
-    console.log('🔐 DEBUG: Comparing password');
-    console.log('🔐 DEBUG: Provided password:', password);
-    console.log('🔐 DEBUG: Stored hash:', user.password);
+    console.log('🔐 [AUTH] Comparing password');
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('🔐 DEBUG: Password match result:', isMatch);
+    console.log('🔐 [AUTH] Password match result:', isMatch);
 
     if (!isMatch) {
+      console.log('🔐 [AUTH] Password mismatch for user:', login);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
 
+    console.log('🔐 [AUTH] Login successful for user:', login);
     sendTokenResponse(user, 200, res);
 
   } catch (error) {

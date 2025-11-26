@@ -121,10 +121,15 @@ app.get('/health', (req, res) => {
 });
 
 // API routes - MUST be before catch-all routes
-app.use('/api/auth', authRoutes);
+console.log('📍 Registering API routes...');
+app.use('/api/auth', (req, res, next) => {
+  console.log(`🔵 [API] ${req.method} /api/auth${req.path} - Headers:`, req.headers);
+  next();
+}, authRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/complaints', complaintsRoutes);
 app.use('/api/admin', adminRoutes);
+console.log('✅ API routes registered');
 
 // Serve React app (for production) - AFTER API routes
 // Note: React build is served from views/student-login.html for now
@@ -135,15 +140,21 @@ if (process.env.NODE_ENV === 'production' && fs.existsSync(buildPath)) {
   
   // Catch-all for React app - only for non-API routes
   app.get('*', (req, res) => {
+    console.log(`🟡 [CATCH-ALL] ${req.method} ${req.path}`);
     // Don't serve React app for API routes
     if (req.path.startsWith('/api/')) {
+      console.log(`🔴 [CATCH-ALL] Blocking API route: ${req.path}`);
       return res.status(404).json({
         success: false,
         message: 'Route not found'
       });
     }
+    console.log(`🟢 [CATCH-ALL] Serving React app for: ${req.path}`);
     res.sendFile(path.join(buildPath, 'index.html'));
   });
+} else {
+  console.log('⚠️  React build not found at:', buildPath);
+  console.log('✅ API routes will be served without React catch-all');
 }
 
 // Error handling middleware
