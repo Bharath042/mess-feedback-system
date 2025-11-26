@@ -28,27 +28,18 @@ const io = socketIO(server, {
 });
 const PORT = process.env.PORT || 3000;
 
-// Security middleware
+// Security middleware - disable CSP to prevent HTTPS upgrade
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:", "http:", "https:"],  // Allow WebSocket and API connections
-      fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "data:"],
-      formAction: ["'self'", "http:", "https:"],  // Allow form submissions to any origin
-      upgradeInsecureRequests: [],  // Don't upgrade HTTP to HTTPS
-    },
-  },
+  contentSecurityPolicy: false,  // Disable CSP completely to prevent upgrade-insecure-requests
   hsts: false,  // Disable HSTS to allow HTTP connections
   crossOriginOpenerPolicy: false,  // Disable COOP header for HTTP
 }));
 
-// Explicitly remove HSTS and add headers to prevent HTTPS upgrade
+// Explicitly remove all HTTPS-forcing headers
 app.use((req, res, next) => {
   res.removeHeader('Strict-Transport-Security');
+  res.removeHeader('Content-Security-Policy');
+  res.removeHeader('Content-Security-Policy-Report-Only');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
