@@ -576,13 +576,16 @@
         <span>Real-time System</span>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Initialize Socket.IO for real-time features
-        const socket = io();
+        console.log('🔍 DEBUG: Script loaded!');
+        
+        // Socket.IO will be initialized if available, but login doesn't require it
+        let socket = null;
 
         // DOM elements
+        console.log('🔍 DEBUG: Getting DOM elements');
         const loginForm = document.getElementById('loginForm');
+        console.log('🔍 DEBUG: loginForm:', loginForm);
         const loginBtn = document.getElementById('loginBtn');
         const passwordToggle = document.getElementById('passwordToggle');
         const passwordInput = document.getElementById('password');
@@ -610,19 +613,25 @@
 
         // Login form submission
         loginForm.addEventListener('submit', async (e) => {
+            console.log('🔍 DEBUG: Form submit event triggered');
             e.preventDefault();
+            console.log('🔍 DEBUG: Default prevented');
             
             const formData = new FormData(loginForm);
             const loginData = {
-                username: formData.get('username'),
+                login: formData.get('username'),  // Backend expects 'login' field
                 password: formData.get('password')
             };
+            
+            console.log('🔍 DEBUG: Login data:', loginData);
 
             // Show loading state
             loginBtn.classList.add('loading');
             loginBtn.querySelector('.btn-text').textContent = 'Signing In...';
+            console.log('🔍 DEBUG: Loading state added');
 
             try {
+                console.log('🔍 DEBUG: Sending fetch request to /api/auth/login');
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
@@ -631,34 +640,44 @@
                     body: JSON.stringify(loginData)
                 });
 
+                console.log('🔍 DEBUG: Response status:', response.status);
                 const result = await response.json();
+                console.log('🔍 DEBUG: Response body:', result);
 
                 if (response.ok) {
+                    console.log('🔍 DEBUG: Login successful!');
                     
                     // Store user data
                     localStorage.setItem('token', result.token);
                     localStorage.setItem('user', JSON.stringify(result.user));
+                    console.log('🔍 DEBUG: User data stored');
                     
-                    // Join student room for real-time updates
-                    socket.emit('join-student', { 
-                        username: result.user.username,
-                        role: result.user.role 
-                    });
+                    // Join student room for real-time updates (if Socket.IO available)
+                    if (socket) {
+                        console.log('🔍 DEBUG: Emitting join-student event');
+                        socket.emit('join-student', { 
+                            username: result.user.username,
+                            role: result.user.role 
+                        });
+                    }
                     
                     // Redirect to student dashboard
+                    console.log('🔍 DEBUG: Redirecting to dashboard in 1.5 seconds');
                     setTimeout(() => {
                         window.location.href = '/student-dashboard';
                     }, 1500);
                 } else {
+                    console.log('🔍 DEBUG: Login failed:', result.message);
                     showAlert(result.message || 'Login failed. Please try again.');
                 }
             } catch (error) {
-                console.error('Login error:', error);
+                console.error('🔍 DEBUG: Login error:', error);
                 showAlert('Network error. Please check your connection and try again.');
             } finally {
                 // Reset loading state
                 loginBtn.classList.remove('loading');
                 loginBtn.querySelector('.btn-text').textContent = 'Sign In';
+                console.log('🔍 DEBUG: Loading state removed');
             }
         });
 
@@ -668,19 +687,21 @@
             window.location.href = '/student-register';
         });
 
-        // Socket.IO connection status
-        socket.on('connect', () => {
-            console.log('Connected to real-time server');
-        });
+        // Socket.IO connection status (if available)
+        if (socket) {
+            socket.on('connect', () => {
+                console.log('Connected to real-time server');
+            });
 
-        socket.on('disconnect', () => {
-            console.log('Disconnected from real-time server');
-        });
+            socket.on('disconnect', () => {
+                console.log('Disconnected from real-time server');
+            });
 
-        // Real-time notifications
-        socket.on('system-announcement', (data) => {
-            showAlert(data.message, 'info');
-        });
+            // Real-time notifications
+            socket.on('system-announcement', (data) => {
+                showAlert(data.message, 'info');
+            });
+        }
 
         // Auto-focus on username field
         document.getElementById('username').focus();
