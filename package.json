@@ -1,6 +1,6 @@
 {
   "name": "mess-feedback-system",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A comprehensive mess feedback system for students to rate and provide feedback on mess food quality with Azure SQL Database integration",
   "main": "server.js",
   "scripts": {
