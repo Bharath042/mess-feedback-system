@@ -35,13 +35,11 @@ router.get('/profile', async (req, res, next) => {
     
     res.status(200).json({
       success: true,
-      data: {
-        id: admin.id,
-        username: admin.username,
-        role: admin.role,
-        is_active: admin.is_active,
-        created_at: admin.created_at
-      }
+      id: admin.id,
+      username: admin.username,
+      role: admin.role,
+      is_active: admin.is_active,
+      created_at: admin.created_at
     });
   } catch (error) {
     console.error('Get admin profile error:', error);
