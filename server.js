@@ -15,6 +15,7 @@ const authRoutes = require('./routes/auth');
 const feedbackRoutes = require('./routes/feedback-complete');
 const complaintsRoutes = require('./routes/complaints');
 const adminRoutes = require('./routes/admin');
+const chatbotRoutes = require('./routes/chatbot');
 const { connectDB } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
 
@@ -130,6 +131,8 @@ app.use('/api/auth', (req, res, next) => {
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/complaints', complaintsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/ai', chatbotRoutes);  // Also support /api/ai for compatibility
 console.log('✅ API routes registered');
 
 // Serve React app (for production) - AFTER API routes
