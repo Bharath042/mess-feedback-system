@@ -6,9 +6,9 @@ const { protect, authorize } = require('../middleware/auth');
 const router = express.Router();
 
 // @desc    Submit a complaint
-// @route   POST /api/complaints
+// @route   POST /api/complaints or POST /api/complaints/submit
 // @access  Private
-router.post('/', protect, [
+router.post(['/', '/submit'], protect, [
   body('mess_hall_id')
     .optional()
     .isInt({ min: 1 })

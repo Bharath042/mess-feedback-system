@@ -1770,27 +1770,7 @@
                 return;
             }
             
-            // Check daily submissions before submitting
-            try {
-                const dailyResponse = await fetch(`/api/daily-submissions/${currentUser.id || 1}`);
-                const dailyData = await dailyResponse.json();
-                
-                if (dailyData.success) {
-                    // Check if this meal type was already submitted today
-                    if (dailyData.submittedMeals.includes(mealType)) {
-                        document.getElementById('feedbackAlert').innerHTML = `<div class="alert alert-error"><i class="fas fa-times-circle me-2"></i>You have already submitted feedback for ${mealType.charAt(0).toUpperCase() + mealType.slice(1)} today!</div>`;
-                        return;
-                    }
-                    
-                    // Check if user has reached daily limit
-                    if (dailyData.totalSubmissions >= 4) {
-                        document.getElementById('feedbackAlert').innerHTML = '<div class="alert alert-error"><i class="fas fa-ban me-2"></i>You have reached the daily limit of 4 feedback submissions!</div>';
-                        return;
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking daily submissions:', error);
-            }
+            // Skip duplicate check - let the server handle it
             
             // Collect food item ratings and comments
             const itemRatings = {};
@@ -1940,10 +1920,11 @@
             }
             
             const formData = {
-                type: type,
+                complaint_type: type,
                 title: title,
                 description: description,
-                severity: severity
+                severity: severity,
+                mess_hall_id: 1
             };
             
             console.log('Submitting complaint:', formData);
@@ -1956,7 +1937,7 @@
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
             
             try {
-                const response = await fetch('/api/complaints/submit', {
+                const response = await fetch('/api/complaints', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',

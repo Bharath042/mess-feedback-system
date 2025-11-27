@@ -171,22 +171,25 @@ router.post('/submit', protect, [
     const pool = await getPool();
     const today = new Date().toISOString().split('T')[0];
 
-    // Check if user already submitted feedback for this meal type today
+    // Check if user already submitted feedback for this exact meal type and mess hall today
+    // Allow multiple submissions for different meals on the same day
     const existingFeedback = await pool.request()
       .input('roll', sql.VarChar, req.user.username)
       .input('meal', sql.VarChar, meal_type)
+      .input('messHall', sql.VarChar, `Mess Hall ${mess_hall_id}`)
       .input('today', sql.Date, today)
       .query(`
         SELECT id FROM Feedback 
         WHERE Roll = @roll 
           AND Meal = @meal 
+          AND mess_hall = @messHall
           AND CAST(created_at AS DATE) = @today
       `);
 
     if (existingFeedback.recordset.length > 0) {
       return res.status(400).json({
         success: false,
-        message: 'You have already submitted feedback for this meal today'
+        message: 'You have already submitted feedback for this meal at this mess hall today. Please try again tomorrow.'
       });
     }
 
