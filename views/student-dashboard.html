@@ -2322,13 +2322,17 @@
             
             let dailyInfo = '';
             if (mealTimeData.dailyInfo) {
-                const submitted = mealTimeData.dailyInfo.submittedMeals;
-                const remaining = mealTimeData.dailyInfo.remainingMeals;
+                const submitted = mealTimeData.dailyInfo.submittedMeals || mealTimeData.dailyInfo.submitted_meals || [];
+                const remaining = mealTimeData.dailyInfo.remainingMeals || mealTimeData.dailyInfo.remaining_meals || mealTimeData.dailyInfo.submitted_meals || [];
+                
+                // Ensure arrays
+                const submittedArray = Array.isArray(submitted) ? submitted : [];
+                const remainingArray = Array.isArray(remaining) ? remaining : [];
                 
                 dailyInfo = `
-                    <br><strong>Today's Submissions:</strong> ${submitted.length}/4
-                    ${submitted.length > 0 ? `<br><strong>Submitted:</strong> ${submitted.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}` : ''}
-                    ${remaining.length > 0 ? `<br><strong>Remaining:</strong> ${remaining.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}` : '<br><strong>All meals submitted for today!</strong>'}
+                    <br><strong>Today's Submissions:</strong> ${submittedArray.length}/4
+                    ${submittedArray.length > 0 ? `<br><strong>Submitted:</strong> ${submittedArray.map(m => typeof m === 'string' ? m.charAt(0).toUpperCase() + m.slice(1) : m).join(', ')}` : ''}
+                    ${remainingArray.length > 0 ? `<br><strong>Remaining:</strong> ${remainingArray.map(m => typeof m === 'string' ? m.charAt(0).toUpperCase() + m.slice(1) : m).join(', ')}` : '<br><strong>All meals submitted for today!</strong>'}
                 `;
             }
             
