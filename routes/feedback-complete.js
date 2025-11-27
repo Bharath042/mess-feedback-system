@@ -126,10 +126,6 @@ router.post('/submit', protect, [
   body('overall_rating')
     .isInt({ min: 1, max: 5 })
     .withMessage('Overall rating must be between 1 and 5'),
-  body('food_quality_rating')
-    .optional()
-    .isInt({ min: 1, max: 5 })
-    .withMessage('Food quality rating must be between 1 and 5'),
   body('service_rating')
     .optional()
     .isInt({ min: 1, max: 5 })
@@ -138,10 +134,6 @@ router.post('/submit', protect, [
     .optional()
     .isInt({ min: 1, max: 5 })
     .withMessage('Cleanliness rating must be between 1 and 5'),
-  body('value_rating')
-    .optional()
-    .isInt({ min: 1, max: 5 })
-    .withMessage('Value rating must be between 1 and 5'),
   body('overall_comments')
     .optional()
     .isLength({ max: 1000 })
@@ -150,18 +142,6 @@ router.post('/submit', protect, [
     .optional()
     .isArray()
     .withMessage('Item ratings must be an array'),
-  body('item_ratings.*.menu_item_id')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('Menu item ID must be valid'),
-  body('item_ratings.*.rating')
-    .optional()
-    .isInt({ min: 1, max: 5 })
-    .withMessage('Item rating must be between 1 and 5'),
-  body('item_ratings.*.comment')
-    .optional()
-    .isLength({ max: 500 })
-    .withMessage('Item comment must be less than 500 characters'),
   body('is_anonymous')
     .optional()
     .isBoolean()
@@ -181,189 +161,73 @@ router.post('/submit', protect, [
       mess_hall_id,
       meal_type,
       overall_rating,
-      food_quality_rating,
       service_rating,
       cleanliness_rating,
-      value_rating,
       overall_comments,
       item_ratings = [],
       is_anonymous = false
     } = req.body;
 
     const pool = await getPool();
-    const transaction = new sql.Transaction(pool);
-    await transaction.begin();
-
     const today = new Date().toISOString().split('T')[0];
 
-    // Check if user already submitted feedback for this mess hall and meal type today
-    const existingFeedback = await transaction.request()
-      .input('userId', sql.Int, req.user.id)
-      .input('messHallId', sql.Int, mess_hall_id)
-      .input('mealType', sql.VarChar, meal_type)
+    // Check if user already submitted feedback for this meal type today
+    const existingFeedback = await pool.request()
+      .input('roll', sql.VarChar, req.user.username)
+      .input('meal', sql.VarChar, meal_type)
       .input('today', sql.Date, today)
       .query(`
-        SELECT id FROM feedback_sessions 
-        WHERE user_id = @userId 
-          AND mess_hall_id = @messHallId 
-          AND meal_type = @mealType
-          AND feedback_date = @today
+        SELECT id FROM Feedback 
+        WHERE Roll = @roll 
+          AND Meal = @meal 
+          AND CAST(created_at AS DATE) = @today
       `);
 
     if (existingFeedback.recordset.length > 0) {
-      await transaction.rollback();
       return res.status(400).json({
         success: false,
         message: 'You have already submitted feedback for this meal today'
       });
     }
 
-    // Calculate points earned
-    let pointsEarned = 5; // Base points for feedback
-    pointsEarned += item_ratings.length * 2; // Points per item rated
-    if (overall_comments && overall_comments.trim()) pointsEarned += 2;
-    item_ratings.forEach(item => {
-      if (item.comment && item.comment.trim()) pointsEarned += 1;
-    });
-
-    // Insert feedback session
-    const feedbackResult = await transaction.request()
-      .input('userId', sql.Int, req.user.id)
-      .input('messHallId', sql.Int, mess_hall_id)
-      .input('mealType', sql.VarChar, meal_type)
-      .input('feedbackDate', sql.Date, today)
-      .input('overallComments', sql.NVarChar, overall_comments || null)
-      .input('pointsEarned', sql.Int, pointsEarned)
-      .input('isAnonymous', sql.Bit, is_anonymous)
+    // Insert feedback using the Feedback table schema
+    const result = await pool.request()
+      .input('StudentName', sql.VarChar, req.user.username)
+      .input('Roll', sql.VarChar, req.user.username)
+      .input('Meal', sql.VarChar, meal_type)
+      .input('Rating', sql.Int, overall_rating)
+      .input('Comment', sql.NVarChar, overall_comments || null)
+      .input('mess_hall', sql.VarChar, `Mess Hall ${mess_hall_id}`)
+      .input('food_quality_rating', sql.Int, overall_rating || null)
+      .input('service_rating', sql.Int, service_rating || null)
+      .input('cleanliness_rating', sql.Int, cleanliness_rating || null)
+      .input('is_anonymous', sql.Bit, is_anonymous || false)
       .query(`
-        INSERT INTO feedback_sessions (
-          user_id, mess_hall_id, meal_type, feedback_date,
-          overall_comments, points_earned, is_anonymous
+        INSERT INTO Feedback (
+          StudentName, Roll, Meal, Rating, Comment,
+          mess_hall, food_quality_rating, service_rating, 
+          cleanliness_rating, is_anonymous
         )
-        OUTPUT INSERTED.id
+        OUTPUT INSERTED.id, INSERTED.created_at
         VALUES (
-          @userId, @messHallId, @mealType, @feedbackDate,
-          @overallComments, @pointsEarned, @isAnonymous
+          @StudentName, @Roll, @Meal, @Rating, @Comment,
+          @mess_hall, @food_quality_rating, @service_rating,
+          @cleanliness_rating, @is_anonymous
         )
       `);
 
-    const feedbackSessionId = feedbackResult.recordset[0].id;
-
-    // Insert individual item feedback
-    for (const itemRating of item_ratings) {
-      if (itemRating.menu_item_id && itemRating.rating) {
-        await transaction.request()
-          .input('feedbackSessionId', sql.Int, feedbackSessionId)
-          .input('menuItemId', sql.Int, itemRating.menu_item_id)
-          .input('rating', sql.Int, itemRating.rating)
-          .input('comment', sql.NVarChar, itemRating.comment || null)
-          .query(`
-            INSERT INTO item_feedback (
-              feedback_session_id, menu_item_id, rating, comment
-            )
-            VALUES (
-              @feedbackSessionId, @menuItemId, @rating, @comment
-            )
-          `);
-      }
-    }
-
-    // Insert daily service ratings (if provided)
-    if (service_rating || cleanliness_rating || value_rating) {
-      // Check if user already rated service today for this mess hall
-      const existingServiceRating = await transaction.request()
-        .input('userId', sql.Int, req.user.id)
-        .input('messHallId', sql.Int, mess_hall_id)
-        .input('today', sql.Date, today)
-        .query(`
-          SELECT id FROM daily_service_ratings 
-          WHERE user_id = @userId 
-            AND mess_hall_id = @messHallId 
-            AND rating_date = @today
-        `);
-
-      if (existingServiceRating.recordset.length === 0) {
-        await transaction.request()
-          .input('userId', sql.Int, req.user.id)
-          .input('messHallId', sql.Int, mess_hall_id)
-          .input('ratingDate', sql.Date, today)
-          .input('serviceRating', sql.Int, service_rating || 3)
-          .input('cleanlinessRating', sql.Int, cleanliness_rating || 3)
-          .input('ambienceRating', sql.Int, value_rating || 3) // Using value_rating as ambience
-          .query(`
-            INSERT INTO daily_service_ratings (
-              user_id, mess_hall_id, rating_date, service_rating,
-              cleanliness_rating, ambience_rating
-            )
-            VALUES (
-              @userId, @messHallId, @ratingDate, @serviceRating,
-              @cleanlinessRating, @ambienceRating
-            )
-          `);
-      }
-    }
-
-    // Update user credits
-    await transaction.request()
-      .input('userId', sql.Int, req.user.id)
-      .input('pointsEarned', sql.Int, pointsEarned)
-      .input('today', sql.Date, today)
-      .query(`
-        MERGE user_credits AS target
-        USING (SELECT @userId as user_id) AS source
-        ON target.user_id = source.user_id
-        WHEN MATCHED THEN
-          UPDATE SET 
-            total_points = total_points + @pointsEarned,
-            points_earned_today = CASE 
-              WHEN last_activity_date = @today THEN points_earned_today + @pointsEarned
-              ELSE @pointsEarned
-            END,
-            last_activity_date = @today,
-            streak_days = CASE 
-              WHEN DATEDIFF(day, last_activity_date, @today) = 1 THEN streak_days + 1
-              WHEN last_activity_date = @today THEN streak_days
-              ELSE 1
-            END,
-            updated_at = GETDATE()
-        WHEN NOT MATCHED THEN
-          INSERT (user_id, total_points, points_earned_today, last_activity_date, streak_days)
-          VALUES (@userId, @pointsEarned, @pointsEarned, @today, 1);
-      `);
-
-    // Log user activity
-    await transaction.request()
-      .input('userId', sql.Int, req.user.id)
-      .input('activityType', sql.VarChar, 'feedback_submission')
-      .input('pointsEarned', sql.Int, pointsEarned)
-      .input('activityDescription', sql.VarChar, `Submitted feedback for ${meal_type} at mess hall ${mess_hall_id}`)
-      .input('referenceId', sql.Int, feedbackSessionId)
-      .input('referenceTable', sql.VarChar, 'feedback_sessions')
-      .query(`
-        INSERT INTO user_activity_log (
-          user_id, activity_type, points_earned, activity_description,
-          reference_id, reference_table
-        )
-        VALUES (
-          @userId, @activityType, @pointsEarned, @activityDescription,
-          @referenceId, @referenceTable
-        )
-      `);
-
-    await transaction.commit();
+    const feedback = result.recordset[0];
 
     res.status(201).json({
       success: true,
       message: 'Feedback submitted successfully',
       data: {
-        feedback_session_id: feedbackSessionId,
-        points_earned: pointsEarned,
-        items_rated: item_ratings.length
+        id: feedback.id,
+        created_at: feedback.created_at
       }
     });
 
   } catch (error) {
-    await transaction.rollback();
     console.error('Submit feedback error:', error);
     next(error);
   }
