@@ -118,12 +118,15 @@ router.get('/mess-halls/:id/menu', [
 // @access  Private
 router.post('/submit', protect, [
   body('mess_hall_id')
+    .optional()
     .isInt({ min: 1 })
     .withMessage('Valid mess hall ID is required'),
   body('meal_type')
+    .optional()
     .isIn(['breakfast', 'lunch', 'dinner', 'snacks'])
     .withMessage('Valid meal type is required'),
   body('overall_rating')
+    .optional()
     .isInt({ min: 1, max: 5 })
     .withMessage('Overall rating must be between 1 and 5'),
   body('service_rating')
@@ -150,6 +153,7 @@ router.post('/submit', protect, [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.error('Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',

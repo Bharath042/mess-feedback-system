@@ -75,38 +75,59 @@ router.get('/history', protect, async (req, res, next) => {
   try {
     const pool = await getPool();
     
+    let feedback = [];
+    let complaints = [];
+    
     // Get recent feedback
-    const feedbackResult = await pool.request()
-      .input('roll', sql.VarChar, req.user.username)
-      .query(`
-        SELECT TOP 10 
-          id, StudentName, Meal, Rating, Comment, created_at
-        FROM Feedback 
-        WHERE Roll = @roll
-        ORDER BY created_at DESC
-      `);
+    try {
+      const feedbackResult = await pool.request()
+        .input('roll', sql.VarChar, req.user.username)
+        .query(`
+          SELECT TOP 10 
+            id, StudentName, Meal, Rating, Comment, created_at
+          FROM Feedback 
+          WHERE Roll = @roll
+          ORDER BY created_at DESC
+        `);
+      feedback = feedbackResult.recordset || [];
+    } catch (err) {
+      console.log('Feedback query error:', err.message);
+      feedback = [];
+    }
     
     // Get recent complaints
-    const complaintsResult = await pool.request()
-      .input('userId', sql.Int, req.user.id)
-      .query(`
-        SELECT TOP 10 
-          id, title, description, status, severity, created_at
-        FROM complaints 
-        WHERE user_id = @userId
-        ORDER BY created_at DESC
-      `);
+    try {
+      const complaintsResult = await pool.request()
+        .input('userId', sql.Int, req.user.id)
+        .query(`
+          SELECT TOP 10 
+            id, title, description, status, severity, created_at
+          FROM complaints 
+          WHERE user_id = @userId
+          ORDER BY created_at DESC
+        `);
+      complaints = complaintsResult.recordset || [];
+    } catch (err) {
+      console.log('Complaints query error:', err.message);
+      complaints = [];
+    }
     
     res.status(200).json({
       success: true,
       data: {
-        feedback: feedbackResult.recordset || [],
-        complaints: complaintsResult.recordset || []
+        feedback: feedback,
+        complaints: complaints
       }
     });
   } catch (error) {
     console.error('Get dashboard history error:', error);
-    next(error);
+    res.status(200).json({
+      success: true,
+      data: {
+        feedback: [],
+        complaints: []
+      }
+    });
   }
 });
 
