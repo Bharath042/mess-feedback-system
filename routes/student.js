@@ -30,7 +30,18 @@ router.get('/profile', protect, async (req, res, next) => {
     
     res.status(200).json({
       success: true,
-      data: user
+      profile: {
+        fullName: user.username,
+        email: '',
+        phone: '',
+        studentId: '',
+        department: '',
+        yearOfStudy: '',
+        hostelName: '',
+        roomNumber: '',
+        dietaryPreferences: '',
+        allergies: ''
+      }
     });
   } catch (error) {
     console.error('Get user profile error:', error);
@@ -43,13 +54,19 @@ router.get('/profile', protect, async (req, res, next) => {
 // @access  Public
 router.get('/menu/today', async (req, res, next) => {
   try {
+    const today = new Date();
+    const day = today.toLocaleDateString('en-US', { weekday: 'long' });
+    const date = today.toLocaleDateString();
+    
     res.status(200).json({
       success: true,
-      data: {
-        breakfast: ['Tea', 'Biscuits', 'Samosa', 'Banana'],
-        lunch: ['Rice', 'Dal', 'Vegetables', 'Roti'],
-        dinner: ['Bread', 'Butter', 'Jam', 'Milk']
-      }
+      day: day,
+      date: date,
+      currentMeal: 'breakfast',
+      currentMealItems: 'Tea, Biscuits, Samosa, Banana',
+      breakfast: ['Tea', 'Biscuits', 'Samosa', 'Banana'],
+      lunch: ['Rice', 'Dal', 'Vegetables', 'Roti'],
+      dinner: ['Bread', 'Butter', 'Jam', 'Milk']
     });
   } catch (error) {
     console.error('Get menu error:', error);
@@ -122,8 +139,8 @@ router.get('/meal-types', async (req, res, next) => {
 
 // @desc    Get daily submissions
 // @route   GET /api/daily-submissions/:userId
-// @access  Private
-router.get('/daily-submissions/:userId', protect, async (req, res, next) => {
+// @access  Public (no auth required for this endpoint)
+router.get('/daily-submissions/:userId', async (req, res, next) => {
   try {
     res.status(200).json({
       success: true,
