@@ -7,7 +7,7 @@ const router = express.Router();
 // @desc    Get user profile
 // @route   GET /api/user/profile
 // @access  Private
-router.get('/profile', protect, async (req, res, next) => {
+router.get('/user/profile', protect, async (req, res, next) => {
   try {
     const pool = await getPool();
     

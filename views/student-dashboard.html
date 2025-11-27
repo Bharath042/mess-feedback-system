@@ -1539,7 +1539,8 @@
                 return;
             }
 
-            const foodItems = mealItems.split(', ');
+            // Handle both array and string formats
+            const foodItems = Array.isArray(mealItems) ? mealItems : mealItems.split(', ');
 
             const foodEmojis = {
                 'Poori': '🫓', 'Rava Kitchadi': '🍚', 'Coconut Chutney': '🥥', 'Coffee': '☕',
@@ -2181,6 +2182,12 @@
 
         function updateNotificationBadge(notifications) {
             const badge = document.getElementById('navNotificationBadge');
+            // Handle undefined or non-array notifications
+            if (!notifications || !Array.isArray(notifications)) {
+                badge.textContent = '0';
+                badge.classList.remove('show');
+                return;
+            }
             const unreadCount = notifications.filter(n => !n.read).length;
             
             badge.textContent = unreadCount;
@@ -2236,10 +2243,14 @@
                 const dailyResponse = await fetch(`/api/daily-submissions/${currentUser.id || 1}`);
                 const dailyData = await dailyResponse.json();
                 
-                if (mealTimeData.success && dailyData.success) {
+                // Handle both old and new API response formats
+                const allowedMeals = mealTimeData.allowedMeals || ['breakfast', 'lunch', 'dinner'];
+                const remainingMeals = dailyData.data?.remainingMeals || dailyData.remainingMeals || ['breakfast', 'lunch', 'dinner'];
+                
+                if (allowedMeals && Array.isArray(allowedMeals) && remainingMeals && Array.isArray(remainingMeals)) {
                     // Combine restrictions: only meals that are both time-allowed AND not submitted today
-                    const availableMeals = mealTimeData.allowedMeals.filter(meal => 
-                        dailyData.remainingMeals.includes(meal)
+                    const availableMeals = allowedMeals.filter(meal => 
+                        remainingMeals.includes(meal)
                     );
                     
                     const combinedData = {
