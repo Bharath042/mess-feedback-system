@@ -1829,15 +1829,32 @@
                 return;
             }
             
+            // Calculate overall rating as average of all ratings
+            const allRatings = [
+                commonRatings.service,
+                commonRatings.cleanliness,
+                commonRatings.ambience,
+                ...Object.values(itemRatings)
+            ].filter(r => r > 0);
+            
+            const overallRating = allRatings.length > 0 
+                ? Math.round(allRatings.reduce((a, b) => a + b, 0) / allRatings.length)
+                : 0;
+            
             const formData = {
-                userId: currentUser.id,
-                messHall: document.getElementById('messHall').value,
-                mealType: mealType,
-                itemRatings: itemRatings,
-                itemComments: itemComments,
-                commonRatings: commonRatings,
-                overallComments: document.getElementById('overallComments').value || '',
-                suggestions: document.getElementById('suggestions').value || ''
+                mess_hall_id: parseInt(document.getElementById('messHall').value) || 1,
+                meal_type: mealType,
+                overall_rating: overallRating,
+                service_rating: commonRatings.service || null,
+                cleanliness_rating: commonRatings.cleanliness || null,
+                value_rating: commonRatings.ambience || null,
+                overall_comments: document.getElementById('overallComments').value || '',
+                item_ratings: Object.entries(itemRatings).map((entry, idx) => ({
+                    menu_item_id: idx + 1,
+                    rating: entry[1],
+                    comment: itemComments[entry[0]] || ''
+                })),
+                is_anonymous: false
             };
             
             console.log('Submitting feedback:', formData); // Debug log
