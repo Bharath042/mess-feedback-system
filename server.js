@@ -136,13 +136,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/ai', chatbotRoutes);  // Also support /api/ai for compatibility
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/user', studentRoutes);
-app.use('/api/menu', studentRoutes);
-app.use('/api/mess-halls', studentRoutes);
-app.use('/api/current-meal-time', studentRoutes);
-app.use('/api/meal-types', studentRoutes);
-app.use('/api/daily-submissions', studentRoutes);
-app.use('/api/notifications', studentRoutes);
+app.use('/api', studentRoutes);  // Mount student routes at /api so /api/user/profile works
 console.log('✅ API routes registered');
 
 // Serve React app (for production) - AFTER API routes
